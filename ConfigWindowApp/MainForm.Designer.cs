@@ -293,6 +293,7 @@
             SwitchConfigBtn.TabStop = false;
             SwitchConfigBtn.Text = "更换配置";
             SwitchConfigBtn.UseVisualStyleBackColor = false;
+            SwitchConfigBtn.Click += SwitchConfigBtn_Click;
             // 
             // SwitchBrowserBtn
             // 
@@ -308,6 +309,7 @@
             SwitchBrowserBtn.TabStop = false;
             SwitchBrowserBtn.Text = "切换自带";
             SwitchBrowserBtn.UseVisualStyleBackColor = false;
+            SwitchBrowserBtn.Click += SwitchBrowserBtn_Click;
             // 
             // SwitchVersionBtn
             // 
@@ -323,6 +325,7 @@
             SwitchVersionBtn.TabStop = false;
             SwitchVersionBtn.Text = "版本切换";
             SwitchVersionBtn.UseVisualStyleBackColor = false;
+            SwitchVersionBtn.Click += SwitchVersionBtn_Click;
             // 
             // ReinstallBtn
             // 
@@ -338,6 +341,7 @@
             ReinstallBtn.TabStop = false;
             ReinstallBtn.Text = "重新安装";
             ReinstallBtn.UseVisualStyleBackColor = false;
+            ReinstallBtn.Click += ReinstallBtn_Click;
             // 
             // DetectionBtn
             // 
@@ -369,6 +373,7 @@
             DetectNetworkBtn.TabStop = false;
             DetectNetworkBtn.Text = "网络检测";
             DetectNetworkBtn.UseVisualStyleBackColor = false;
+            DetectNetworkBtn.Click += DetectNetworkBtn_Click;
             // 
             // IPSwitchBtn
             // 
@@ -384,6 +389,7 @@
             IPSwitchBtn.TabStop = false;
             IPSwitchBtn.Text = "IP变更";
             IPSwitchBtn.UseVisualStyleBackColor = false;
+            IPSwitchBtn.Click += IPSwitchBtn_Click;
             // 
             // ResetPositionBtn
             // 
@@ -399,6 +405,7 @@
             ResetPositionBtn.TabStop = false;
             ResetPositionBtn.Text = "重设位置";
             ResetPositionBtn.UseVisualStyleBackColor = false;
+            ResetPositionBtn.Click += ResetPositionBtn_Click;
             // 
             // SwitchDetectionBtn
             // 
@@ -414,6 +421,7 @@
             SwitchDetectionBtn.TabStop = false;
             SwitchDetectionBtn.Text = "切换识别";
             SwitchDetectionBtn.UseVisualStyleBackColor = false;
+            SwitchDetectionBtn.Click += SwitchDetectionBtn_Click;
             // 
             // RegularMatchBtn
             // 
@@ -429,6 +437,7 @@
             RegularMatchBtn.TabStop = false;
             RegularMatchBtn.Text = "正则匹配";
             RegularMatchBtn.UseVisualStyleBackColor = false;
+            RegularMatchBtn.Click += RegularMatchBtn_Click;
             // 
             // BootUpBtn
             // 
@@ -444,6 +453,7 @@
             BootUpBtn.TabStop = false;
             BootUpBtn.Text = "开机启动";
             BootUpBtn.UseVisualStyleBackColor = false;
+            BootUpBtn.Click += BootUpBtn_Click;
             // 
             // RestartBtn
             // 
@@ -459,6 +469,7 @@
             RestartBtn.TabStop = false;
             RestartBtn.Text = "重新启动";
             RestartBtn.UseVisualStyleBackColor = false;
+            RestartBtn.Click += RestartBtn_Click;
             // 
             // label9
             // 

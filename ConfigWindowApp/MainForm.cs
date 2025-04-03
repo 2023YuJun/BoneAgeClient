@@ -15,6 +15,10 @@ namespace ConfigWindowApp
         {
 
         }
+        private void RestartBtn_Click(object sender, EventArgs e)
+        {
+
+        }
 
         private void DetectionBtn_Click(object sender, EventArgs e)
         {
@@ -56,6 +60,97 @@ namespace ConfigWindowApp
                 }
             }
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void BootUpBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void RegularMatchBtn_Click(object sender, EventArgs e)
+        {
+            using (InputForm inputDialog = new InputForm(RegularMatchBtn.Text, "修改正则表达式"))
+            {
+                if (inputDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string inputText = inputDialog.InputText;
+                    try
+                    {
+                        ConfigHelper.SetSetting("RE", inputText);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private void SwitchDetectionBtn_Click(object sender, EventArgs e)
+        {
+            using (InputForm inputDialog = new InputForm(SwitchDetectionBtn.Text, "修改识别方式"))
+            {
+                if (inputDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string inputText = inputDialog.InputText;
+                    try
+                    {
+                        ConfigHelper.SetSetting("IFZ", inputText);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private void ResetPositionBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void IPSwitchBtn_Click(object sender, EventArgs e)
+        {
+            using (InputForm inputDialog = new InputForm(IPSwitchBtn.Text, "修改服务器IP"))
+            {
+                if (inputDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string inputText = inputDialog.InputText;
+                    try
+                    {
+                        ConfigHelper.SetSetting("IP", inputText);
+                    }
+                    catch (Exception ex) { 
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private void DetectNetworkBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ReinstallBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SwitchVersionBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SwitchBrowserBtn_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SwitchConfigBtn_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
