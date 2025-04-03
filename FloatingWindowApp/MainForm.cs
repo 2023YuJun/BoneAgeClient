@@ -1,8 +1,10 @@
 using Common;
 using CommonWinForm;
 using System.Configuration;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace FloatingWindowApp
 {
@@ -10,15 +12,42 @@ namespace FloatingWindowApp
     {
         private bool isDragging = false;
         private Point startPoint = new Point(0, 0);
+
+        private const int WH_MOUSE_LL = 14;
+        private const int WM_LBUTTONDOWN = 0x0201;
+        private LowLevelMouseProc _proc;
+        private IntPtr _hookID = IntPtr.Zero;
+        private Stopwatch _stopwatch = new Stopwatch();
+        private const int ThrottleInterval = 200; // 200毫秒内只处理一次
+
         public MainForm()
         {
             InitializeComponent();
+            InitializeHook();
+            SubscribeToOcrEvents();
+        }
+        private void SubscribeToOcrEvents()
+        {
+            // 订阅 OCR 完成事件
+            OCRService.OcrCompleted += OcrService_OcrCompleted;
+        }
+
+        private void OcrService_OcrCompleted(object sender, Common.OcrCompletedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Result))
+            {
+                // 更新 TextBox 的内容
+                this.Invoke(new Action(() =>
+                {
+                    textBox.Text = e.Result;
+                }));
+            }
+            else if (!string.IsNullOrEmpty(e.Error))
+            {
+                MessageBox.Show(e.Error);
+            }
         }
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-
-        }
-        private void SelectColor_Click(object sender, EventArgs e)
         {
 
         }
@@ -26,18 +55,7 @@ namespace FloatingWindowApp
         {
             try
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings["AutoOpen"] == null)
-                {
-                    config.AppSettings.Settings.Add("AutoOpen", AutoOpen.Checked.ToString());
-                }
-                else
-                {
-                    config.AppSettings.Settings["AutoOpen"].Value = AutoOpen.Checked.ToString();
-                }
-
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
+                ConfigHelper.SetSetting("AutoOpen", AutoOpen.Checked.ToString());
             }
             catch (Exception ex)
             {
@@ -48,18 +66,7 @@ namespace FloatingWindowApp
         {
             try
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                if (config.AppSettings.Settings["ResultResident"] == null)
-                {
-                    config.AppSettings.Settings.Add("ResultResident", ResultResident.Checked.ToString());
-                }
-                else
-                {
-                    config.AppSettings.Settings["ResultResident"].Value = ResultResident.Checked.ToString();
-                }
-
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
+                ConfigHelper.SetSetting("ResultResident", ResultResident.Checked.ToString());
             }
             catch (Exception ex)
             {
@@ -165,16 +172,16 @@ namespace FloatingWindowApp
         {
             try
             {
-                int x = int.Parse(ConfigurationManager.AppSettings["FormLocationX"]);
-                int y = int.Parse(ConfigurationManager.AppSettings["FormLocationY"]);
-                string AutoOpen = ConfigurationManager.AppSettings["AutoOpen"];
-                string ResultResident = ConfigurationManager.AppSettings["ResultResident"];
-                string bootup;
+                string x, y, AutoOpen, ResultResident, bootup;
+                ConfigHelper.GetSetting("FormLocationX", out x);
+                ConfigHelper.GetSetting("FormLocationY", out y);
+                ConfigHelper.GetSetting("AutoOpen", out AutoOpen);
+                ConfigHelper.GetSetting("ResultResident", out ResultResident);
+                Common.ConfigHelper.GetSetting("BootUp", out bootup);
                 this.StartPosition = FormStartPosition.Manual;
-                this.Location = new Point(x, y);
+                this.Location = new Point(int.Parse(x), int.Parse(y));
                 if (AutoOpen != null) this.AutoOpen.Checked = bool.Parse(AutoOpen);
                 if (ResultResident != null) this.ResultResident.Checked = bool.Parse(ResultResident);
-                ConfigHelper.GetSetting("BootUp", out bootup);
                 if (bootup != null) BootUp.Checked = bool.Parse(bootup);
             }
             catch (Exception ex)
@@ -201,5 +208,115 @@ namespace FloatingWindowApp
             }
         }
 
+
+
+        // 全局鼠标事件监听钩子
+        private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        private void InitializeHook()
+        {
+            _proc = HookCallback;
+            _hookID = SetHook(_proc);
+        }
+
+        private static IntPtr SetHook(LowLevelMouseProc proc)
+        {
+            using (Process process = Process.GetCurrentProcess())
+            using (ProcessModule module = process.MainModule)
+            {
+                return SetWindowsHookEx(WH_MOUSE_LL, proc, GetModuleHandle(module.ModuleName), 0);
+            }
+        }
+
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_LBUTTONDOWN)
+            {
+                if (_stopwatch.IsRunning && _stopwatch.ElapsedMilliseconds < ThrottleInterval)
+                {
+                    return IntPtr.Zero; // 忽略频繁的点击
+                }
+
+                _stopwatch.Restart();
+
+                MSLLHOOKSTRUCT hookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
+                Point mousePosition = new Point(hookStruct.pt.x, hookStruct.pt.y);
+
+                ProcessMouseClick(mousePosition);
+            }
+
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int x;
+            public int y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MSLLHOOKSTRUCT
+        {
+            public POINT pt;
+            public uint mouseData;
+            public uint flags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        private async void ProcessMouseClick(Point mousePosition)
+        {
+            try
+            {
+                string screenshotPath = await Task.Run(() => CaptureScreenshot(mousePosition));
+                if (!string.IsNullOrEmpty(screenshotPath))
+                {
+                    int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+                    await Task.Run(() => OCRService.OCRSercive(screenshotPath, mousePosition, screenHeight));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"处理过程中发生错误: {ex.Message}");
+            }
+        }
+
+        private string CaptureScreenshot(Point mousePosition)
+        {
+            using (Bitmap bitmap = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
+            {
+                using (Graphics graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.CopyFromScreen(Point.Empty, Point.Empty, bitmap.Size);
+                }
+
+                //对图像进行预处理
+                Bitmap processedBitmap = ImageProcessService.ConvertToGrayscale(bitmap);
+                processedBitmap = ImageProcessService.ApplyGammaCorrection(processedBitmap);
+                string screenshotPath = Path.Combine(Path.GetTempPath(), "temp.png");
+                processedBitmap.Save(screenshotPath, ImageFormat.Png);
+                return screenshotPath;
+            }   
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            UnhookWindowsHookEx(_hookID);
+        }
     }
 }

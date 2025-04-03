@@ -37,6 +37,8 @@ namespace FloatingWindowApp
             contextMenuStrip = new ContextMenuStrip(components);
             Appearance = new ToolStripMenuItem();
             SelectColor = new ToolStripMenuItem();
+            lightToolStripMenuItem = new ToolStripMenuItem();
+            darkToolStripMenuItem = new ToolStripMenuItem();
             AutoOpen = new ToolStripMenuItem();
             ResultResident = new ToolStripMenuItem();
             BootUp = new ToolStripMenuItem();
@@ -44,6 +46,7 @@ namespace FloatingWindowApp
             UsageGuide = new ToolStripMenuItem();
             Feedback = new ToolStripMenuItem();
             Exit = new ToolStripMenuItem();
+            pinkToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -78,10 +81,22 @@ namespace FloatingWindowApp
             // 
             // SelectColor
             // 
+            SelectColor.DropDownItems.AddRange(new ToolStripItem[] { lightToolStripMenuItem, darkToolStripMenuItem, pinkToolStripMenuItem });
             SelectColor.Name = "SelectColor";
             SelectColor.Size = new Size(224, 32);
             SelectColor.Text = "配色选择";
-            SelectColor.Click += SelectColor_Click;
+            // 
+            // lightToolStripMenuItem
+            // 
+            lightToolStripMenuItem.Name = "lightToolStripMenuItem";
+            lightToolStripMenuItem.Size = new Size(224, 32);
+            lightToolStripMenuItem.Text = "Light";
+            // 
+            // darkToolStripMenuItem
+            // 
+            darkToolStripMenuItem.Name = "darkToolStripMenuItem";
+            darkToolStripMenuItem.Size = new Size(224, 32);
+            darkToolStripMenuItem.Text = "Dark";
             // 
             // AutoOpen
             // 
@@ -139,6 +154,12 @@ namespace FloatingWindowApp
             Exit.Text = "退出程序";
             Exit.Click += Exit_Click;
             // 
+            // pinkToolStripMenuItem
+            // 
+            pinkToolStripMenuItem.Name = "pinkToolStripMenuItem";
+            pinkToolStripMenuItem.Size = new Size(224, 32);
+            pinkToolStripMenuItem.Text = "Pink";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
@@ -177,5 +198,8 @@ namespace FloatingWindowApp
         private ToolStripMenuItem AutoOpen;
         private ToolStripMenuItem ResultResident;
         private ToolStripMenuItem BootUp;
+        private ToolStripMenuItem lightToolStripMenuItem;
+        private ToolStripMenuItem darkToolStripMenuItem;
+        private ToolStripMenuItem pinkToolStripMenuItem;
     }
 }
