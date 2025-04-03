@@ -13,21 +13,20 @@ namespace Common
 
         static ConfigHelper()
         {
-            // 获取类库项目的 App.config 文件路径
+            string projectName = Assembly.GetExecutingAssembly().GetName().Name;
             string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
-            ConfigPath = Path.Combine(solutionPath, "Common", "App.config");
+            ConfigPath = Path.Combine(solutionPath, projectName, "App.config");
         }
 
         public static void GetSetting(string key, out string value)
         {
-            value = "0";
+            value = "";
             try
             {
                 lock (lockObject)
                 {
                     if (!File.Exists(ConfigPath))
                     {
-                        // 如果文件不存在，创建默认配置文件
                         CreateDefaultConfig();
                     }
 
@@ -39,7 +38,7 @@ namespace Common
 
                     if (node != null)
                     {
-                        value = node.Attributes["value"]?.Value ?? "0";
+                        value = node.Attributes["value"]?.Value ?? "";
                     }
                 }
             }
@@ -57,7 +56,6 @@ namespace Common
                 {
                     if (!File.Exists(ConfigPath))
                     {
-                        // 如果文件不存在，创建默认配置文件
                         CreateDefaultConfig();
                     }
 
