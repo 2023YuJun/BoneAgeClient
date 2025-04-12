@@ -20,6 +20,9 @@ namespace FloatingWindowApp
         private Stopwatch _stopwatch = new Stopwatch();
         private const int ThrottleInterval = 200; // 200毫秒内只处理一次
 
+        private static bool isShowingMessageBox = false;
+        private bool isTaskRunning = false;
+
         public MainForm()
         {
             InitializeComponent();
@@ -44,7 +47,7 @@ namespace FloatingWindowApp
             }
             else if (!string.IsNullOrEmpty(e.Error))
             {
-                MessageBox.Show(e.Error);
+                ShowError(e.Error);
             }
         }
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -59,7 +62,7 @@ namespace FloatingWindowApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存自动打开设置时发生错误: {ex.Message}");
+                ShowError($"保存自动打开设置时发生错误: {ex.Message}");
             }
         }
         private void ResultResident_Click(object sender, EventArgs e)
@@ -70,7 +73,7 @@ namespace FloatingWindowApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存结果常驻设置时发生错误: {ex.Message}");
+                ShowError($"保存结果常驻设置时发生错误: {ex.Message}");
             }
         }
 
@@ -83,7 +86,7 @@ namespace FloatingWindowApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"设置开机自启动失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError($"设置开机自启动失败: {ex.Message}");
                 BootUp.Checked = false;
             }
 
@@ -120,7 +123,7 @@ namespace FloatingWindowApp
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"保存内容时发生错误: {ex.Message}");
+                            ShowError($"保存内容时发生错误: {ex.Message}");
                         }
                     }
                 }
@@ -140,6 +143,24 @@ namespace FloatingWindowApp
         private void Exit_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void ShowError(string errorMessage)
+        {
+            if (isShowingMessageBox)
+            {
+                return; // 如果已经有提示框在运行，直接返回
+            }
+
+            isShowingMessageBox = true;
+            try
+            {
+                MessageBox.Show(errorMessage, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                isShowingMessageBox = false; // 确保提示框关闭后重置标记
+            }
         }
 
         private void MainForm_MouseDown(object sender, MouseEventArgs e)
@@ -188,7 +209,7 @@ namespace FloatingWindowApp
             {
                 this.StartPosition = FormStartPosition.Manual;
                 Location = new Point(800, 50);
-                MessageBox.Show($"恢复窗体位置时发生错误: {ex.Message}");
+                ShowError($"恢复窗体位置时发生错误: {ex.Message}");
             }
         }
 
@@ -201,10 +222,11 @@ namespace FloatingWindowApp
                 config.AppSettings.Settings["FormLocationY"].Value = this.Location.Y.ToString();
                 config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
+                UnhookWindowsHookEx(_hookID);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"保存窗体位置时发生错误: {ex.Message}");
+                ShowError($"保存窗体位置时发生错误: {ex.Message}");
             }
         }
 
@@ -280,22 +302,32 @@ namespace FloatingWindowApp
 
         private async void ProcessMouseClick(Point mousePosition)
         {
+            if (isTaskRunning)
+            {
+                return; // 如果任务已经在运行，直接返回
+            }
             try
             {
-                string screenshotPath = await Task.Run(() => CaptureScreenshot(mousePosition));
+                isTaskRunning = true;
+                (string screenshotPath, Rectangle tableRegion) = await Task.Run(() => CaptureScreenshot(mousePosition));
+
                 if (!string.IsNullOrEmpty(screenshotPath))
                 {
-                    int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-                    await Task.Run(() => OCRService.OCRSercive(screenshotPath, mousePosition, screenHeight));
+                    int screenHeight = tableRegion.Height;
+                    await Task.Run(() => OCRService.OCRSercive(screenshotPath, mousePosition, screenHeight, tableRegion));
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"处理过程中发生错误: {ex.Message}");
+                ShowError($"处理过程中发生错误: {ex.Message}");
+            }
+            finally
+            {
+                isTaskRunning = false;
             }
         }
 
-        private string CaptureScreenshot(Point mousePosition)
+        private (string screenshotPath, Rectangle tableRegion) CaptureScreenshot(Point mousePosition)
         {
             using (Bitmap bitmap = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
             {
@@ -304,19 +336,20 @@ namespace FloatingWindowApp
                     graphics.CopyFromScreen(Point.Empty, Point.Empty, bitmap.Size);
                 }
 
-                //对图像进行预处理
-                Bitmap processedBitmap = ImageProcessService.ConvertToGrayscale(bitmap);
-                processedBitmap = ImageProcessService.ApplyGammaCorrection(processedBitmap);
+                // 对图像进行预处理
+                //Bitmap processedBitmap = ImageProcessService.ConvertToGrayscale(bitmap);
+                //Bitmap processedBitmap = ImageProcessService.ApplyGammaCorrection(processedBitmap);
                 string screenshotPath = Path.Combine(Path.GetTempPath(), "temp.png");
-                processedBitmap.Save(screenshotPath, ImageFormat.Png);
-                return screenshotPath;
-            }   
+                bitmap.Save(screenshotPath, ImageFormat.Png);
+
+                // 获取裁剪后的表格区域及其边界信息
+                //Rectangle tableRegion = ImageProcessService.ProcessColorfulTableScreenshot(screenshotPath);
+                Rectangle tableRegion = ImageProcessService.ExtractAndSaveTableRegion(screenshotPath);
+                //ImageProcessService.InvertImage(screenshotPath);
+                //ImageProcessService.BinarizeImageInPlace(screenshotPath, 140);
+                return (screenshotPath, tableRegion);
+            }
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            base.OnFormClosing(e);
-            UnhookWindowsHookEx(_hookID);
-        }
     }
 }

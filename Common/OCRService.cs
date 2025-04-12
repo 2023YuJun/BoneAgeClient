@@ -29,7 +29,7 @@ namespace Common
             tessDataPath = Path.Combine(solutionPath, "Common", "Tesseract-OCR", "tessdata");
         }
 
-        public static async void OCRSercive(string screenshotPath, Point mousePosition, int screenHeight)
+        public static async void OCRSercive(string screenshotPath, Point mousePosition, int screenHeight, Rectangle tableRegion)
         {
             try
             {
@@ -43,7 +43,13 @@ namespace Common
                     ConfigHelper.GetSetting("RE", out RegularExpressions);
                     int ifz = int.Parse(ifzValue);
 
-                    string rowData = ExtractCenterRowData(tableData, mousePosition, screenHeight, ifz, RegularExpressions);
+                    // 计算鼠标位置相对于裁剪后的表格区域的位置
+                    Point relativeMousePosition = new Point(
+                        mousePosition.X - tableRegion.X,
+                        mousePosition.Y - tableRegion.Y
+                    );
+
+                    string rowData = ExtractCenterRowData(tableData, relativeMousePosition, screenHeight, ifz, RegularExpressions);
                     ConfigHelper.SetSetting("DetectData", rowData);
                     // 触发事件并传递结果
                     OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Result = rowData });
@@ -109,12 +115,13 @@ namespace Common
         {
             try
             {
-                if (tableData.Count == 0)
+                if (tableData.Count == 0 || screenHeight == 0)
                 {
                     return "未识别到表格数据";
                 }
                 // 计算每行的高度（假设每行高度相等）
-                int lineHeight = screenHeight / tableData.Count;
+                int lineHeight = (screenHeight / tableData.Count) - 1;
+                //int lineHeight = 22;
 
                 // 确定鼠标所在行
                 int rowIndex = mousePosition.Y / lineHeight;
