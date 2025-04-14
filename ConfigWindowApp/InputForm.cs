@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.Config;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -39,22 +40,20 @@ namespace ConfigWindowApp
 
         private void InputForm_Load(object sender, EventArgs e)
         {
+            var settings = ConfigProvider.Settings.GetConfig();
             if(label.Text == "修改服务器IP")
             {
-                string IP;
-                ConfigHelper.GetSetting("IP", out IP);
+                string IP = settings.ServiceIP;
                 textBox1.Text = IP;
             }
             else if(label.Text == "修改识别方式")
             {
-                string IFZ;
-                ConfigHelper.GetSetting("IFZ", out IFZ);
+                string IFZ = settings.IFZ;
                 textBox1.Text = IFZ;
             }
             else if (label.Text == "修改正则表达式")
             {
-                string RE;
-                ConfigHelper.GetSetting("RE", out RE);
+                string RE = settings.RE;
                 textBox1.Text = RE;
             }
         }

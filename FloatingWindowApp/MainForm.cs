@@ -1,10 +1,14 @@
 using Common;
+using Common.Config;
+using Common.Helpers;
+using Common.Services;
 using CommonWinForm;
 using System.Configuration;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace FloatingWindowApp
 {
@@ -18,7 +22,7 @@ namespace FloatingWindowApp
         private LowLevelMouseProc _proc;
         private IntPtr _hookID = IntPtr.Zero;
         private Stopwatch _stopwatch = new Stopwatch();
-        private const int ThrottleInterval = 200; // 200毫秒内只处理一次
+        private const int ThrottleInterval = 500; // 500毫秒内只处理一次
 
         private static bool isShowingMessageBox = false;
         private bool isTaskRunning = false;
@@ -35,9 +39,9 @@ namespace FloatingWindowApp
             OCRService.OcrCompleted += OcrService_OcrCompleted;
         }
 
-        private void OcrService_OcrCompleted(object sender, Common.OcrCompletedEventArgs e)
+        private void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(e.Result))
+            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, @"^\d+$"))
             {
                 // 更新 TextBox 的内容
                 this.Invoke(new Action(() =>
@@ -52,13 +56,19 @@ namespace FloatingWindowApp
         }
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-
+            ConfigProvider.Settings.UpdateConfig(s =>
+            {
+                s.DetectData = textBox.Text;
+            });
         }
         private void AutoOpen_Click(object sender, EventArgs e)
         {
             try
             {
-                ConfigHelper.SetSetting("AutoOpen", AutoOpen.Checked.ToString());
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.AutoOpen = AutoOpen.Checked;
+                });
             }
             catch (Exception ex)
             {
@@ -69,7 +79,10 @@ namespace FloatingWindowApp
         {
             try
             {
-                ConfigHelper.SetSetting("ResultResident", ResultResident.Checked.ToString());
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.ResultResident = ResultResident.Checked;
+                });
             }
             catch (Exception ex)
             {
@@ -82,7 +95,7 @@ namespace FloatingWindowApp
             string appPath = Application.ExecutablePath;
             try
             {
-                Config.SettingBootUp(appPath, BootUp.Checked);
+                ConfigService.SettingBootUp(appPath, BootUp.Checked);
             }
             catch (Exception ex)
             {
@@ -116,9 +129,9 @@ namespace FloatingWindowApp
                             }
                             string randomFileName = Utils.GenerateRandomFileName(8);
                             // 定义文件路径
-                            string filePath = Path.Combine(targetFolder, randomFileName + ".jpeg");
+                            string filePath = Path.Combine(targetFolder, randomFileName + ".png");
 
-                            capturedImage.Save(filePath, ImageFormat.Jpeg);
+                            capturedImage.Save(filePath, ImageFormat.Png);
                             MessageBox.Show("截图已保存：" + filePath);
                         }
                         catch (Exception ex)
@@ -193,17 +206,17 @@ namespace FloatingWindowApp
         {
             try
             {
-                string x, y, AutoOpen, ResultResident, bootup;
-                ConfigHelper.GetSetting("FormLocationX", out x);
-                ConfigHelper.GetSetting("FormLocationY", out y);
-                ConfigHelper.GetSetting("AutoOpen", out AutoOpen);
-                ConfigHelper.GetSetting("ResultResident", out ResultResident);
-                Common.ConfigHelper.GetSetting("BootUp", out bootup);
+                var settings = ConfigProvider.Settings.GetConfig();
+                int x = settings.FormLocationX;
+                int y = settings.FormLocationY;
+                bool AutoOpen = settings.AutoOpen;
+                bool ResultResident = settings.ResultResident;
+                bool bootup = settings.BootUp;
                 this.StartPosition = FormStartPosition.Manual;
-                this.Location = new Point(int.Parse(x), int.Parse(y));
-                if (AutoOpen != null) this.AutoOpen.Checked = bool.Parse(AutoOpen);
-                if (ResultResident != null) this.ResultResident.Checked = bool.Parse(ResultResident);
-                if (bootup != null) BootUp.Checked = bool.Parse(bootup);
+                this.Location = new Point(x, y);
+                this.AutoOpen.Checked = AutoOpen;
+                this.ResultResident.Checked = ResultResident;
+                BootUp.Checked = bootup;
             }
             catch (Exception ex)
             {
@@ -217,11 +230,11 @@ namespace FloatingWindowApp
         {
             try
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                config.AppSettings.Settings["FormLocationX"].Value = this.Location.X.ToString();
-                config.AppSettings.Settings["FormLocationY"].Value = this.Location.Y.ToString();
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("appSettings");
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.FormLocationX = this.Location.X;
+                    s.FormLocationY = this.Location.Y;
+                });
                 UnhookWindowsHookEx(_hookID);
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
-using Common;
+using Common.Config;
+using Common.Helpers;
 using CommonWinForm;
 using System.Drawing.Imaging;
 
@@ -73,10 +74,12 @@ namespace ConfigWindowApp
             {
                 if (inputDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string inputText = inputDialog.InputText;
                     try
                     {
-                        ConfigHelper.SetSetting("RE", inputText);
+                        ConfigProvider.Settings.UpdateConfig(s =>
+                        {
+                            s.RE = inputDialog.InputText;
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -93,9 +96,17 @@ namespace ConfigWindowApp
                 if (inputDialog.ShowDialog() == DialogResult.OK)
                 {
                     string inputText = inputDialog.InputText;
+                    string[] inputTexts = inputText.Split(',');
                     try
                     {
-                        ConfigHelper.SetSetting("IFZ", inputText);
+                        ConfigProvider.Settings.UpdateConfig(s =>
+                        {
+                            s.IFZ = inputText;
+                            s.MinArea = int.Parse(inputTexts[0]);
+                            s.MaxArea = int.Parse(inputTexts[1]);
+                            s.MaxAspectRatio = int.Parse(inputTexts[2]);
+                            s.ColumnToTable = int.Parse(inputTexts[3]);
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -107,7 +118,11 @@ namespace ConfigWindowApp
 
         private void ResetPositionBtn_Click(object sender, EventArgs e)
         {
-
+            ConfigProvider.Settings.UpdateConfig(s =>
+            {
+                s.FormLocationX = 800;
+                s.FormLocationY = 50;
+            });
         }
 
         private void IPSwitchBtn_Click(object sender, EventArgs e)
@@ -119,7 +134,7 @@ namespace ConfigWindowApp
                     string inputText = inputDialog.InputText;
                     try
                     {
-                        ConfigHelper.SetSetting("IP", inputText);
+                        ConfigProvider.Settings.UpdateConfig(s => { s.ServiceIP = inputText; });
                     }
                     catch (Exception ex) { 
                         MessageBox.Show(ex.Message);

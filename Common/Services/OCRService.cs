@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Common.Config;
+using Emgu.CV.Linemod;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
@@ -10,7 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tesseract;
 
-namespace Common
+namespace Common.Services
 {
     public static class OCRService
     {
@@ -38,19 +40,14 @@ namespace Common
 
                 if (tableData.Count > 0)
                 {
-                    string ifzValue, RegularExpressions;
-                    ConfigHelper.GetSetting("IFZ", out ifzValue);
-                    ConfigHelper.GetSetting("RE", out RegularExpressions);
-                    int ifz = int.Parse(ifzValue);
-
                     // 计算鼠标位置相对于裁剪后的表格区域的位置
                     Point relativeMousePosition = new Point(
                         mousePosition.X - tableRegion.X,
                         mousePosition.Y - tableRegion.Y
                     );
 
-                    string rowData = ExtractCenterRowData(tableData, relativeMousePosition, screenHeight, ifz, RegularExpressions);
-                    ConfigHelper.SetSetting("DetectData", rowData);
+                    string rowData = ExtractCenterRowData(tableData, relativeMousePosition, screenHeight);
+                    ConfigProvider.Settings.UpdateConfig(s => { s.DetectData = rowData; });
                     // 触发事件并传递结果
                     OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Result = rowData });
                 }
@@ -111,17 +108,19 @@ namespace Common
         }
 
 
-        public static string ExtractCenterRowData(List<string[]> tableData, Point mousePosition, int screenHeight, int ifz, string regexPattern)
+        public static string ExtractCenterRowData(List<string[]> tableData, Point mousePosition, int screenHeight)
         {
             try
             {
+                var settings = ConfigProvider.Settings.GetConfig();
+                int columnToTable = settings.ColumnToTable;
+                string regexPattern = settings.RE;
                 if (tableData.Count == 0 || screenHeight == 0)
                 {
                     return "未识别到表格数据";
                 }
                 // 计算每行的高度（假设每行高度相等）
-                int lineHeight = (screenHeight / tableData.Count) - 1;
-                //int lineHeight = 22;
+                int lineHeight = screenHeight / tableData.Count - 1;
 
                 // 确定鼠标所在行
                 int rowIndex = mousePosition.Y / lineHeight;
@@ -132,21 +131,23 @@ namespace Common
 
                 string[] row = tableData[rowIndex];
 
-                if (row.Length <= ifz)
+                if (row.Length <= columnToTable)
                 {
                     return "列索引超出范围";
                 }
 
-                string columnData = row[ifz];
-
-                // 使用正则表达式处理列数据
-                Match match = Regex.Match(columnData, regexPattern);
-                if (match.Success)
+                string columnData = row[columnToTable];
+                string result = string.Empty;
+                MatchCollection matches = Regex.Matches(columnData, regexPattern);
+                if (matches.Count != 0)
                 {
-                    return match.Value;
+                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    {
+                        result += match.Value;
+                    }
+                    return result;
                 }
-                return columnData;
-                //return "未找到匹配的列数据";
+                return result;
             }
             catch (Exception ex)
             {

@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.Configuration;
 using Microsoft.Win32;
 using static System.Net.Mime.MediaTypeNames;
+using Common.Config;
 
 namespace Common
 {
-    public static class Config
+    public static class ConfigService
     {
         private const string RegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
@@ -17,15 +18,18 @@ namespace Common
         {
             try
             {
-                string appName;
-                ConfigHelper.GetSetting("AppName", out appName);
+                var settings = ConfigProvider.Settings.GetConfig();
+                string appName = settings.AppName;
                 if (string.IsNullOrWhiteSpace(appName))
                 {
                     throw new InvalidOperationException("配置文件中未定义应用程序名称");
                 }
                 SetBootUp(appName, appPath, enable);
                 IsBootUpEnabled(appName);
-                ConfigHelper.SetSetting("BootUp", enable.ToString());
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.BootUp = enable;
+                });
             }
             catch (Exception ex)
             {   

@@ -46,7 +46,6 @@ namespace FloatingWindowApp
             UsageGuide = new ToolStripMenuItem();
             Feedback = new ToolStripMenuItem();
             Exit = new ToolStripMenuItem();
-            pinkToolStripMenuItem = new ToolStripMenuItem();
             contextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -69,19 +68,19 @@ namespace FloatingWindowApp
             contextMenuStrip.ImageScalingSize = new Size(25, 25);
             contextMenuStrip.Items.AddRange(new ToolStripItem[] { Appearance, Detection, UsageGuide, Feedback, Exit });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(174, 164);
+            contextMenuStrip.Size = new Size(220, 192);
             // 
             // Appearance
             // 
             Appearance.DropDownItems.AddRange(new ToolStripItem[] { SelectColor, AutoOpen, ResultResident, BootUp });
             Appearance.Image = Properties.Resources.外观设置;
             Appearance.Name = "Appearance";
-            Appearance.Size = new Size(173, 32);
+            Appearance.Size = new Size(219, 32);
             Appearance.Text = "外观设置";
             // 
             // SelectColor
             // 
-            SelectColor.DropDownItems.AddRange(new ToolStripItem[] { lightToolStripMenuItem, darkToolStripMenuItem, pinkToolStripMenuItem });
+            SelectColor.DropDownItems.AddRange(new ToolStripItem[] { lightToolStripMenuItem, darkToolStripMenuItem });
             SelectColor.Name = "SelectColor";
             SelectColor.Size = new Size(224, 32);
             SelectColor.Text = "配色选择";
@@ -126,7 +125,7 @@ namespace FloatingWindowApp
             // 
             Detection.Image = Properties.Resources.识别区域;
             Detection.Name = "Detection";
-            Detection.Size = new Size(173, 32);
+            Detection.Size = new Size(219, 32);
             Detection.Text = "识别区域";
             Detection.Click += Detection_Click;
             // 
@@ -134,7 +133,7 @@ namespace FloatingWindowApp
             // 
             UsageGuide.Image = Properties.Resources.使用指南;
             UsageGuide.Name = "UsageGuide";
-            UsageGuide.Size = new Size(173, 32);
+            UsageGuide.Size = new Size(219, 32);
             UsageGuide.Text = "使用指南";
             UsageGuide.Click += UsageGuide_Click;
             // 
@@ -142,7 +141,7 @@ namespace FloatingWindowApp
             // 
             Feedback.Image = Properties.Resources.爬虫;
             Feedback.Name = "Feedback";
-            Feedback.Size = new Size(173, 32);
+            Feedback.Size = new Size(219, 32);
             Feedback.Text = "故障反馈";
             Feedback.Click += Feedback_Click;
             // 
@@ -150,15 +149,9 @@ namespace FloatingWindowApp
             // 
             Exit.Image = Properties.Resources.退出程序;
             Exit.Name = "Exit";
-            Exit.Size = new Size(173, 32);
+            Exit.Size = new Size(219, 32);
             Exit.Text = "退出程序";
             Exit.Click += Exit_Click;
-            // 
-            // pinkToolStripMenuItem
-            // 
-            pinkToolStripMenuItem.Name = "pinkToolStripMenuItem";
-            pinkToolStripMenuItem.Size = new Size(224, 32);
-            pinkToolStripMenuItem.Text = "Pink";
             // 
             // MainForm
             // 
@@ -200,6 +193,5 @@ namespace FloatingWindowApp
         private ToolStripMenuItem BootUp;
         private ToolStripMenuItem lightToolStripMenuItem;
         private ToolStripMenuItem darkToolStripMenuItem;
-        private ToolStripMenuItem pinkToolStripMenuItem;
     }
 }

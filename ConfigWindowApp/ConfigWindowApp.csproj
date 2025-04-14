@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\Common\Config\Settings.json" Link="Settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CommonWinForm\CommonWinForm.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>

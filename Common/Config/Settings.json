@@ -1,0 +1,20 @@
+{
+  "AppName": "FloatingWindowApp",
+  "StartStatus": false,
+  "DetectStatus": false,
+  "ResultStatus": false,
+  "BrowserStatus": false,
+  "ServiceIP": null,
+  "IFZ": "800000,900000,4,1",
+  "MinArea": 800000,
+  "MaxArea": 900000,
+  "MaxAspectRatio": 4,
+  "ColumnToTable": 1,
+  "RE": "\\d+",
+  "DetectData": "鼠标位置超出表格范围",
+  "FormLocationX": 800,
+  "FormLocationY": 50,
+  "BootUp": false,
+  "AutoOpen": false,
+  "ResultResident": false
+}
