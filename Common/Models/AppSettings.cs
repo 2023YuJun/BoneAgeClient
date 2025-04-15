@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Common.Models
 {
-    public class AppSettings
+    public class AppSettings : IConfig
     {
-        public string AppName { get; set; } = "FloatingWindowApp";
+        public string AppName { get; set; } = "";
+        public string AppPath { get; set; } = "";
         public bool StartStatus { get; set; }
         public bool DetectStatus { get; set; }
         public bool ResultStatus { get; set; }

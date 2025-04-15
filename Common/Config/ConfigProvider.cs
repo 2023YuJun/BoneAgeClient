@@ -10,11 +10,19 @@ namespace Common.Config
 {
     public static class ConfigProvider
     {
-        private static readonly string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
-        private static readonly string ConfigPath = Path.Combine(solutionPath,"Common", "Config", "Settings.json");
+        // 动态获取解决方案根目录（更可靠的方法）
+        private static readonly string _solutionRoot = Path.GetFullPath(Path.Combine(
+            System.AppDomain.CurrentDomain.BaseDirectory,
+            "..", "..", "..", ".."  // 根据实际层级调整
+        ));
+
+        // 配置文件路径
+        private static readonly string _configPath = Path.Combine(
+            _solutionRoot, "Common", "Config", "Settings.json"
+        );
 
         // 全局单例配置助手
         public static readonly SettingJsonHelper<AppSettings> Settings =
-            new SettingJsonHelper<AppSettings>(ConfigPath, enableFileWatcher: true);
+            new SettingJsonHelper<AppSettings>(_configPath, enableFileWatcher: true);
     }
 }

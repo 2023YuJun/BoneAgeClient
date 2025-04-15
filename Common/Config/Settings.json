@@ -1,5 +1,6 @@
 {
   "AppName": "FloatingWindowApp",
+  "AppPath": "",
   "StartStatus": false,
   "DetectStatus": false,
   "ResultStatus": false,
@@ -11,9 +12,9 @@
   "MaxAspectRatio": 4,
   "ColumnToTable": 1,
   "RE": "\\d+",
-  "DetectData": "鼠标位置超出表格范围",
-  "FormLocationX": 800,
-  "FormLocationY": 50,
+  "DetectData": "未识别到表格数据",
+  "FormLocationX": 1341,
+  "FormLocationY": 284,
   "BootUp": false,
   "AutoOpen": false,
   "ResultResident": false

@@ -1,15 +1,17 @@
 ﻿using System.Diagnostics;
+using Common.Models;
 using Newtonsoft.Json;
 
 namespace Common.Helpers
 {
-    public class SettingJsonHelper<T> where T : new()
+    public class SettingJsonHelper<T> where T : IConfig, new()
     {
         private static readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         private readonly string _configFilePath;
         private T _configData;
         private FileSystemWatcher _fileWatcher;
         private bool _disposed = false;
+        private bool isSelfChange = false;
 
         /// <summary>
         /// 初始化配置文件助手
@@ -33,30 +35,19 @@ namespace Common.Helpers
         /// </summary>
         public T GetConfig()
         {
-            _lock.EnterReadLock();
-            try
-            {
-                return _configData;
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
+            return _configData;
         }
 
         /// <summary>
         /// 更新配置并保存
         /// </summary>
-        public void UpdateConfig(Action<T> updateAction, bool autoSave = true)
+        public void UpdateConfig(Action<T> updateAction)
         {
             _lock.EnterWriteLock();
             try
             {
                 updateAction(_configData);
-                if (autoSave)
-                {
-                    SaveConfig();
-                }
+                SaveConfig();
             }
             finally
             {
@@ -99,20 +90,27 @@ namespace Common.Helpers
         /// </summary>
         private void LoadConfig()
         {
-            _lock.EnterWriteLock();
             try
             {
                 string json = File.ReadAllText(_configFilePath);
-                _configData = JsonConvert.DeserializeObject<T>(json) ?? new T();
+                T newConfig = JsonConvert.DeserializeObject<T>(json) ?? new T();
+
+                if (_lock.TryEnterWriteLock(100))
+                {
+                    try
+                    {
+                        _configData = newConfig;
+                        CheckAndTriggerEvents(newConfig);
+                    }
+                    finally
+                    {
+                        _lock.ExitWriteLock();
+                    }
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"加载配置文件失败: {ex.Message}");
-                _configData = new T();
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
             }
         }
 
@@ -121,8 +119,17 @@ namespace Common.Helpers
         /// </summary>
         public void SaveConfig()
         {
-            string json = JsonConvert.SerializeObject(_configData, Formatting.Indented);
-            File.WriteAllText(_configFilePath, json);
+            try
+            {
+                string json = JsonConvert.SerializeObject(_configData, Formatting.Indented);
+                isSelfChange = true;
+                File.WriteAllText(_configFilePath, json);
+                Task.Delay(100).ContinueWith(_ => isSelfChange = false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"保存配置失败: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -137,14 +144,47 @@ namespace Common.Helpers
                 NotifyFilter = NotifyFilters.LastWrite
             };
 
-            // 防抖处理：避免多次触发
             var reloadDebouncer = new Timer(_ => LoadConfig(), null, Timeout.Infinite, Timeout.Infinite);
+            isSelfChange = false;
+
             _fileWatcher.Changed += (sender, e) =>
             {
-                reloadDebouncer.Change(500, Timeout.Infinite); // 500ms 内多次修改只触发一次
+                if (isSelfChange)
+                {
+                    isSelfChange = false;
+                    return;
+                }
+                reloadDebouncer.Change(500, Timeout.Infinite);
             };
 
             _fileWatcher.EnableRaisingEvents = true;
+        }
+
+        // 定义独立事件
+        public event Action ConfigChanged;
+
+        // 记录上一次的字段值
+        private int _lastFormLocationX;
+
+        private void CheckAndTriggerEvents(T newConfig)
+        {
+            bool isChanged = false;
+
+            // 检查所有需要监听的字段
+            if (_lastFormLocationX != newConfig.FormLocationX)
+            {
+                _lastFormLocationX = newConfig.FormLocationX;
+                isChanged = true;
+            }
+
+            // 其他字段检查（如 DetectStatus, ResultStatus）...
+            // if (_lastDetectStatus != newConfig.DetectStatus) { ... }
+
+            // 若任意字段变化，触发事件
+            if (isChanged)
+            {
+                ConfigChanged?.Invoke();
+            }
         }
 
         /// <summary>

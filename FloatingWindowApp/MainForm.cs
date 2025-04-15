@@ -14,6 +14,9 @@ namespace FloatingWindowApp
 {
     public partial class MainForm : Form
     {
+        public static string appName = Application.ProductName;
+        public static string appPath = Application.ExecutablePath;
+
         private bool isDragging = false;
         private Point startPoint = new Point(0, 0);
 
@@ -32,13 +35,28 @@ namespace FloatingWindowApp
             InitializeComponent();
             InitializeHook();
             SubscribeToOcrEvents();
+            ConfigProvider.Settings.ConfigChanged += OnConfigChanged;
         }
         private void SubscribeToOcrEvents()
         {
             // 订阅 OCR 完成事件
             OCRService.OcrCompleted += OcrService_OcrCompleted;
         }
-
+        private void OnConfigChanged()
+        {
+            // 确保在 UI 线程执行
+            if (InvokeRequired)
+            {
+                Invoke(new Action(OnConfigChanged));
+                return;
+            }
+            LoadConfigAndUpdateUI();
+        }
+        private void LoadConfigAndUpdateUI()
+        {
+            var settings = ConfigProvider.Settings.GetConfig();
+            Location = new Point(settings.FormLocationX, settings.FormLocationY);
+        }
         private void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, @"^\d+$"))
@@ -92,10 +110,14 @@ namespace FloatingWindowApp
 
         private void BootUp_Click(object sender, EventArgs e)
         {
-            string appPath = Application.ExecutablePath;
             try
             {
-                ConfigService.SettingBootUp(appPath, BootUp.Checked);
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.AppName = appName;
+                    s.AppPath = appPath;
+                });
+                ConfigService.SettingBootUp(BootUp.Checked);
             }
             catch (Exception ex)
             {
@@ -190,6 +212,11 @@ namespace FloatingWindowApp
             if (e.Button == MouseButtons.Left)
             {
                 isDragging = false;
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.FormLocationX = Location.X;
+                    s.FormLocationY = Location.Y;
+                });
             }
         }
 
@@ -230,11 +257,7 @@ namespace FloatingWindowApp
         {
             try
             {
-                ConfigProvider.Settings.UpdateConfig(s =>
-                {
-                    s.FormLocationX = this.Location.X;
-                    s.FormLocationY = this.Location.Y;
-                });
+                ConfigProvider.Settings.ConfigChanged -= OnConfigChanged;
                 UnhookWindowsHookEx(_hookID);
             }
             catch (Exception ex)

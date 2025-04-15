@@ -1,7 +1,9 @@
+using Common;
 using Common.Config;
 using Common.Helpers;
 using CommonWinForm;
 using System.Drawing.Imaging;
+using System.Linq;
 
 namespace ConfigWindowApp
 {
@@ -65,7 +67,9 @@ namespace ConfigWindowApp
 
         private void BootUpBtn_Click(object sender, EventArgs e)
         {
-
+            var settings = ConfigProvider.Settings.GetConfig();
+            bool bootUp = settings.BootUp;
+            ConfigService.SettingBootUp(!bootUp);
         }
 
         private void RegularMatchBtn_Click(object sender, EventArgs e)

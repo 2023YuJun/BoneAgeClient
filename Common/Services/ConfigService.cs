@@ -14,16 +14,13 @@ namespace Common
     {
         private const string RegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
-        public static void SettingBootUp(string appPath, bool enable)
+        public static void SettingBootUp(bool enable)
         {
             try
             {
                 var settings = ConfigProvider.Settings.GetConfig();
                 string appName = settings.AppName;
-                if (string.IsNullOrWhiteSpace(appName))
-                {
-                    throw new InvalidOperationException("配置文件中未定义应用程序名称");
-                }
+                string appPath = settings.AppPath;
                 SetBootUp(appName, appPath, enable);
                 IsBootUpEnabled(appName);
                 ConfigProvider.Settings.UpdateConfig(s =>
