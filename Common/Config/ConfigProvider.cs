@@ -10,10 +10,10 @@ namespace Common.Config
 {
     public static class ConfigProvider
     {
-        // 动态获取解决方案根目录（更可靠的方法）
+        // 动态获取解决方案根目录
         private static readonly string _solutionRoot = Path.GetFullPath(Path.Combine(
             System.AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", ".."  // 根据实际层级调整
+            "..", "..", "..", ".."  
         ));
 
         // 配置文件路径

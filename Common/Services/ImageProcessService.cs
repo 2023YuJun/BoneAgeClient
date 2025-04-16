@@ -16,25 +16,8 @@ namespace Common.Services
 {
     public static class ImageProcessService
     {    
-        public static Rectangle ExtractAndSaveTableRegion(string imagePath)
-        {
-            try
-            {
-                Mat image = new Mat(imagePath, ImreadModes.Grayscale);
-                Rectangle tableRect = DetectTableRegion(image);
-                if (tableRect.IsEmpty) return Rectangle.Empty;
-                Mat finalResult = ProcessTableRegion(image, tableRect);
-                CvInvoke.Imwrite(imagePath, finalResult);
-                return tableRect;
-            }
-            catch (Exception ex)
-            {
-                return Rectangle.Empty;
-            }
-        }
-
         // 表格区域检测（优化版）
-        private static Rectangle DetectTableRegion(Mat enhancedImage)
+        public static Rectangle DetectTableRegion(Mat enhancedImage)
         {
             // 使用Canny边缘检测
             Mat edges = new Mat();
@@ -70,7 +53,7 @@ namespace Common.Services
         }
 
         // 表格区域后处理
-        private static Mat ProcessTableRegion(Mat image, Rectangle rect)
+        public static Mat ProcessTableRegion(Mat image, Rectangle rect)
         {
             Mat tableRegion = new Mat(image, rect);
 

@@ -1,15 +1,10 @@
 ﻿using Common.Config;
-using Emgu.CV.Linemod;
+using Emgu.CV;
+using Emgu.CV.Reg;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Drawing;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Tesseract;
 
 namespace Common.Services
@@ -24,18 +19,26 @@ namespace Common.Services
 
         private static string tessDataPath;
 
+        // 静态Tesseract引擎（线程安全通过锁保证）
+        private static TesseractEngine _engine;
+        private static readonly object _engineLock = new object();
         static OCRService()
         {
             // 获取类库项目的 App.config 文件路径
             string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
             tessDataPath = Path.Combine(solutionPath, "Common", "Tesseract-OCR", "tessdata");
+            lock (_engineLock)
+            {
+                _engine = new TesseractEngine(tessDataPath, "chi_sim", EngineMode.Default);
+                _engine.SetVariable("tessedit_char_whitelist", "0123456789 ");
+            }
         }
 
-        public static async void OCRSercive(string screenshotPath, Point mousePosition, int screenHeight, Rectangle tableRegion)
+        public static async void OCRServiceProcessing(Mat image, Point mousePosition, int screenHeight, Rectangle tableRegion)
         {
             try
             {
-                string ocrResult = await Task.Run(() => PerformOcr(screenshotPath));
+                string ocrResult = await Task.Run(() => PerformOcr(image));
                 List<string[]> tableData = ParseToTable(ocrResult);
 
                 if (tableData.Count > 0)
@@ -65,15 +68,17 @@ namespace Common.Services
             }
         }
 
-        public static string PerformOcr(string imagePath)
+        // OCR处理最耗时函数
+        public static string PerformOcr(Mat image)
         {
             try
             {
-                using (var engine = new TesseractEngine(tessDataPath, "chi_sim", EngineMode.Default))
+                lock (_engineLock)
                 {
-                    using (var img = Pix.LoadFromFile(imagePath))
+                    CvInvoke.Imwrite("temp.png", image);
+                    using (var img = Pix.LoadFromFile("temp.png"))
                     {
-                        using (var page = engine.Process(img))
+                        using (var page = _engine.Process(img))
                         {
                             return page.GetText();
                         }
@@ -141,7 +146,7 @@ namespace Common.Services
                 MatchCollection matches = Regex.Matches(columnData, regexPattern);
                 if (matches.Count != 0)
                 {
-                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    foreach (Match match in matches)
                     {
                         result += match.Value;
                     }

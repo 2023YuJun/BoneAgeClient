@@ -165,6 +165,8 @@ namespace Common.Helpers
 
         // 记录上一次的字段值
         private int _lastFormLocationX;
+        private int _lastFormLocationY;
+        private bool BootUp;
 
         private void CheckAndTriggerEvents(T newConfig)
         {
@@ -177,8 +179,17 @@ namespace Common.Helpers
                 isChanged = true;
             }
 
-            // 其他字段检查（如 DetectStatus, ResultStatus）...
-            // if (_lastDetectStatus != newConfig.DetectStatus) { ... }
+            if (_lastFormLocationY != newConfig.FormLocationY)
+            {
+                _lastFormLocationY = newConfig.FormLocationY;
+                isChanged = true;
+            }
+
+            if (BootUp != newConfig.BootUp)
+            {
+                BootUp = newConfig.BootUp;
+                isChanged = true;
+            }
 
             // 若任意字段变化，触发事件
             if (isChanged)

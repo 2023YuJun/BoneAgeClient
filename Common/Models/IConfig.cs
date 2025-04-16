@@ -9,8 +9,7 @@ namespace Common.Models
     public interface IConfig
     {
         int FormLocationX { get; set; }
-        bool DetectStatus { get; set; }
-        bool ResultStatus { get; set; }
-        // 其他需要监听的字段...
+        int FormLocationY { get; set; }
+        bool BootUp { get; set; }
     }
 }

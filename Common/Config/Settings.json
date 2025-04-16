@@ -12,9 +12,9 @@
   "MaxAspectRatio": 4,
   "ColumnToTable": 1,
   "RE": "\\d+",
-  "DetectData": "未识别到表格数据",
-  "FormLocationX": 1341,
-  "FormLocationY": 284,
+  "DetectData": "00459487",
+  "FormLocationX": 1430,
+  "FormLocationY": 208,
   "BootUp": false,
   "AutoOpen": false,
   "ResultResident": false

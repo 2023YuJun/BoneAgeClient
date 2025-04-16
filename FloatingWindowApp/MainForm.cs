@@ -3,6 +3,8 @@ using Common.Config;
 using Common.Helpers;
 using Common.Services;
 using CommonWinForm;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System.Configuration;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -56,6 +58,7 @@ namespace FloatingWindowApp
         {
             var settings = ConfigProvider.Settings.GetConfig();
             Location = new Point(settings.FormLocationX, settings.FormLocationY);
+            BootUp.Checked = settings.BootUp;
         }
         private void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
@@ -338,19 +341,21 @@ namespace FloatingWindowApp
 
         private async void ProcessMouseClick(Point mousePosition)
         {
-            if (isTaskRunning)
-            {
-                return; // 如果任务已经在运行，直接返回
-            }
+            if (isTaskRunning) return;
+            isTaskRunning = true;
             try
             {
-                isTaskRunning = true;
-                (string screenshotPath, Rectangle tableRegion) = await Task.Run(() => CaptureScreenshot(mousePosition));
-
-                if (!string.IsNullOrEmpty(screenshotPath))
+                Bitmap bitmap = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+                (Mat screenshot, Rectangle tableRegion) = await Task.Run(() => CaptureScreenshot(bitmap, mousePosition));
+                if (screenshot != null)
                 {
-                    int screenHeight = tableRegion.Height;
-                    await Task.Run(() => OCRService.OCRSercive(screenshotPath, mousePosition, screenHeight, tableRegion));
+                    await Task.Run(() => OCRService.OCRServiceProcessing(
+                        screenshot,
+                        mousePosition, 
+                        screenshot.Height,
+                        tableRegion
+                        )
+                    );
                 }
             }
             catch (Exception ex)
@@ -363,27 +368,40 @@ namespace FloatingWindowApp
             }
         }
 
-        private (string screenshotPath, Rectangle tableRegion) CaptureScreenshot(Point mousePosition)
+        private (Mat processedTable, Rectangle tableRegion) CaptureScreenshot(Bitmap bitmap, Point mousePosition)
         {
-            using (Bitmap bitmap = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
+            try
             {
                 using (Graphics graphics = Graphics.FromImage(bitmap))
                 {
                     graphics.CopyFromScreen(Point.Empty, Point.Empty, bitmap.Size);
                 }
+                using (Mat colorImage = bitmap.ToMat())
+                using (Mat grayImage = new Mat())
+                {
+                    // 使用 OpenCV 转换为灰度图像
+                    CvInvoke.CvtColor(colorImage, grayImage, ColorConversion.Bgr2Gray);
+                    // 传入灰度图像进行表格检测
+                    Rectangle tableRegion = ImageProcessService.DetectTableRegion(grayImage);
 
-                // 对图像进行预处理
-                //Bitmap processedBitmap = ImageProcessService.ConvertToGrayscale(bitmap);
-                //Bitmap processedBitmap = ImageProcessService.ApplyGammaCorrection(processedBitmap);
-                string screenshotPath = Path.Combine(Path.GetTempPath(), "temp.png");
-                bitmap.Save(screenshotPath, ImageFormat.Png);
-
-                // 获取裁剪后的表格区域及其边界信息
-                //Rectangle tableRegion = ImageProcessService.ProcessColorfulTableScreenshot(screenshotPath);
-                Rectangle tableRegion = ImageProcessService.ExtractAndSaveTableRegion(screenshotPath);
-                //ImageProcessService.InvertImage(screenshotPath);
-                //ImageProcessService.BinarizeImageInPlace(screenshotPath, 140);
-                return (screenshotPath, tableRegion);
+                    if (!tableRegion.IsEmpty)
+                    {
+                        // 裁剪并处理表格区域
+                        Rectangle leftHalfRegion = new Rectangle(
+                            tableRegion.X,
+                            tableRegion.Y,
+                            tableRegion.Width / 2,
+                            tableRegion.Height
+                        );
+                        Mat processedTable = ImageProcessService.ProcessTableRegion(grayImage, leftHalfRegion);
+                        return (processedTable, tableRegion);
+                    }
+                }
+                return (bitmap.ToMat(), Rectangle.Empty);
+            }
+            catch
+            {
+                return (null, Rectangle.Empty);
             }
         }
 
