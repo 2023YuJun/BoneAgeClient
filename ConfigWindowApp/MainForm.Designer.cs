@@ -387,7 +387,7 @@
             IPSwitchBtn.Size = new Size(120, 35);
             IPSwitchBtn.TabIndex = 5;
             IPSwitchBtn.TabStop = false;
-            IPSwitchBtn.Text = "IP变更";
+            IPSwitchBtn.Text = "IP 变更";
             IPSwitchBtn.UseVisualStyleBackColor = false;
             IPSwitchBtn.Click += IPSwitchBtn_Click;
             // 

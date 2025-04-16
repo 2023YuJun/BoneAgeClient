@@ -2,6 +2,7 @@ using Common;
 using Common.Config;
 using Common.Helpers;
 using CommonWinForm;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
 
@@ -20,7 +21,43 @@ namespace ConfigWindowApp
         }
         private void RestartBtn_Click(object sender, EventArgs e)
         {
-
+            var settings = ConfigProvider.Settings.GetConfig();
+            string appname = settings.AppName;
+            string appPath = settings.AppPath;
+            if (!System.IO.File.Exists(appPath))
+            {
+                MessageBox.Show("未找到主程序！");
+                return;
+            }
+            if (Process.GetProcessesByName(appname).Length > 0)
+            {
+                DialogResult result = MessageBox.Show("主程序正在运行，是否重新启动？", "提示", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                {
+                    // 终止旧的进程
+                    foreach (Process process in Process.GetProcessesByName(appname))
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                    // 启动新的进程
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = appPath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
+                }
+            }
+            else
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = appPath,
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
+            }
         }
 
         private void DetectionBtn_Click(object sender, EventArgs e)
@@ -58,6 +95,7 @@ namespace ConfigWindowApp
                         catch (Exception ex)
                         {
                             MessageBox.Show($"保存内容时发生错误: {ex.Message}");
+                            throw;
                         }
                     }
                 }
@@ -87,7 +125,8 @@ namespace ConfigWindowApp
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        MessageBox.Show($"保存正则表达式时发生错误: {ex.Message}");
+                        throw;
                     }
                 }
             }
@@ -141,7 +180,8 @@ namespace ConfigWindowApp
                         ConfigProvider.Settings.UpdateConfig(s => { s.ServiceIP = inputText; });
                     }
                     catch (Exception ex) { 
-                        MessageBox.Show(ex.Message);
+                        MessageBox.Show($"保存服务器IP时发生错误: {ex.Message}");
+                        throw;
                     }
                 }
             }
@@ -154,12 +194,13 @@ namespace ConfigWindowApp
 
         private void ReinstallBtn_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("该按钮功能目的是为了实现两个项目的重新安装功能");
         }
 
         private void SwitchVersionBtn_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("该按钮功能目的是为了实现Tesseract-OCR模型版本切换，\n" +
+                "但由于编写时间有限，暂时不实现该功能。");
         }
 
         private void SwitchBrowserBtn_Click(object sender, EventArgs e)
@@ -169,7 +210,8 @@ namespace ConfigWindowApp
 
         private void SwitchConfigBtn_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("该按钮功能目的是为了实现配置文件从服务器中下载，\n" +
+                "但由于编写时间有限，暂时不实现该功能。");
         }
     }
 }

@@ -65,6 +65,7 @@ namespace Common.Services
             {
                 // 触发事件并传递错误信息
                 OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Error = $"处理过程中发生错误: {ex.Message}" });
+                throw;
             }
         }
 

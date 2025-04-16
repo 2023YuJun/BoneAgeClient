@@ -94,6 +94,7 @@ namespace FloatingWindowApp
             catch (Exception ex)
             {
                 ShowError($"保存自动打开设置时发生错误: {ex.Message}");
+                throw;
             }
         }
         private void ResultResident_Click(object sender, EventArgs e)
@@ -108,6 +109,7 @@ namespace FloatingWindowApp
             catch (Exception ex)
             {
                 ShowError($"保存结果常驻设置时发生错误: {ex.Message}");
+                throw;
             }
         }
 
@@ -115,17 +117,13 @@ namespace FloatingWindowApp
         {
             try
             {
-                ConfigProvider.Settings.UpdateConfig(s =>
-                {
-                    s.AppName = appName;
-                    s.AppPath = appPath;
-                });
                 ConfigService.SettingBootUp(BootUp.Checked);
             }
             catch (Exception ex)
             {
                 ShowError($"设置开机自启动失败: {ex.Message}");
                 BootUp.Checked = false;
+                throw;
             }
 
         }
@@ -162,6 +160,7 @@ namespace FloatingWindowApp
                         catch (Exception ex)
                         {
                             ShowError($"保存内容时发生错误: {ex.Message}");
+                            throw;
                         }
                     }
                 }
@@ -236,6 +235,11 @@ namespace FloatingWindowApp
         {
             try
             {
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.AppName = appName;
+                    s.AppPath = appPath;
+                });
                 var settings = ConfigProvider.Settings.GetConfig();
                 int x = settings.FormLocationX;
                 int y = settings.FormLocationY;
@@ -253,6 +257,7 @@ namespace FloatingWindowApp
                 this.StartPosition = FormStartPosition.Manual;
                 Location = new Point(800, 50);
                 ShowError($"恢复窗体位置时发生错误: {ex.Message}");
+                throw;
             }
         }
 
@@ -266,6 +271,7 @@ namespace FloatingWindowApp
             catch (Exception ex)
             {
                 ShowError($"保存窗体位置时发生错误: {ex.Message}");
+                throw;
             }
         }
 
@@ -361,6 +367,7 @@ namespace FloatingWindowApp
             catch (Exception ex)
             {
                 ShowError($"处理过程中发生错误: {ex.Message}");
+                throw;
             }
             finally
             {
@@ -402,6 +409,7 @@ namespace FloatingWindowApp
             catch
             {
                 return (null, Rectangle.Empty);
+                throw;
             }
         }
 

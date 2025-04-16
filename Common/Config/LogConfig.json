@@ -1,0 +1,7 @@
+{
+  "Logging": {
+    "MaxLogSizeMB": 50,
+    "RetainDays": 30,
+    "MinLogLevel": "Debug"
+  }
+}

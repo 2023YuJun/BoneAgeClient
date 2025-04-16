@@ -1,6 +1,6 @@
 {
   "AppName": "FloatingWindowApp",
-  "AppPath": "",
+  "AppPath": "E:\\graduation_project\\Client\\FloatingWindowApp\\bin\\Debug\\net8.0-windows\\FloatingWindowApp.exe",
   "StartStatus": false,
   "DetectStatus": false,
   "ResultStatus": false,
@@ -12,9 +12,9 @@
   "MaxAspectRatio": 4,
   "ColumnToTable": 1,
   "RE": "\\d+",
-  "DetectData": "00459487",
-  "FormLocationX": 1430,
-  "FormLocationY": 208,
+  "DetectData": "列索引超出范围",
+  "FormLocationX": 897,
+  "FormLocationY": 146,
   "BootUp": false,
   "AutoOpen": false,
   "ResultResident": false

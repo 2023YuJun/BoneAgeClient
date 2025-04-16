@@ -111,6 +111,7 @@ namespace Common.Helpers
             catch (Exception ex)
             {
                 Debug.WriteLine($"加载配置文件失败: {ex.Message}");
+                throw;
             }
         }
 
@@ -129,6 +130,7 @@ namespace Common.Helpers
             catch (Exception ex)
             {
                 Debug.WriteLine($"保存配置失败: {ex.Message}");
+                throw;
             }
         }
 
