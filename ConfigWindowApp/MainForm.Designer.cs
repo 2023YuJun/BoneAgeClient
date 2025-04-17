@@ -257,8 +257,6 @@
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            tableLayoutPanel2.Controls.Add(SwitchConfigBtn, 3, 2);
-            tableLayoutPanel2.Controls.Add(SwitchBrowserBtn, 2, 2);
             tableLayoutPanel2.Controls.Add(SwitchVersionBtn, 1, 2);
             tableLayoutPanel2.Controls.Add(ReinstallBtn, 0, 2);
             tableLayoutPanel2.Controls.Add(DetectionBtn, 3, 1);
@@ -269,6 +267,8 @@
             tableLayoutPanel2.Controls.Add(RegularMatchBtn, 2, 0);
             tableLayoutPanel2.Controls.Add(BootUpBtn, 1, 0);
             tableLayoutPanel2.Controls.Add(RestartBtn, 0, 0);
+            tableLayoutPanel2.Controls.Add(SwitchConfigBtn, 2, 2);
+            tableLayoutPanel2.Controls.Add(SwitchBrowserBtn, 3, 2);
             tableLayoutPanel2.Location = new Point(150, 40);
             tableLayoutPanel2.Margin = new Padding(0);
             tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -285,7 +285,7 @@
             SwitchConfigBtn.BackColor = Color.Black;
             SwitchConfigBtn.FlatStyle = FlatStyle.System;
             SwitchConfigBtn.Font = new Font("Microsoft YaHei UI", 10F);
-            SwitchConfigBtn.Location = new Point(525, 106);
+            SwitchConfigBtn.Location = new Point(357, 106);
             SwitchConfigBtn.Margin = new Padding(0);
             SwitchConfigBtn.Name = "SwitchConfigBtn";
             SwitchConfigBtn.Size = new Size(120, 35);
@@ -301,13 +301,13 @@
             SwitchBrowserBtn.BackColor = Color.Black;
             SwitchBrowserBtn.FlatStyle = FlatStyle.System;
             SwitchBrowserBtn.Font = new Font("Microsoft YaHei UI", 10F);
-            SwitchBrowserBtn.Location = new Point(357, 106);
+            SwitchBrowserBtn.Location = new Point(525, 106);
             SwitchBrowserBtn.Margin = new Padding(0);
             SwitchBrowserBtn.Name = "SwitchBrowserBtn";
             SwitchBrowserBtn.Size = new Size(120, 35);
             SwitchBrowserBtn.TabIndex = 10;
             SwitchBrowserBtn.TabStop = false;
-            SwitchBrowserBtn.Text = "切换自带";
+            SwitchBrowserBtn.Text = "故障反馈";
             SwitchBrowserBtn.UseVisualStyleBackColor = false;
             SwitchBrowserBtn.Click += SwitchBrowserBtn_Click;
             // 

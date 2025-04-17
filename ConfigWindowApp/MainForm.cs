@@ -205,7 +205,8 @@ namespace ConfigWindowApp
 
         private void SwitchBrowserBtn_Click(object sender, EventArgs e)
         {
-
+            FaultFeedBackForm faultFeedBackForm = new FaultFeedBackForm();
+            faultFeedBackForm.ShowDialog();
         }
 
         private void SwitchConfigBtn_Click(object sender, EventArgs e)

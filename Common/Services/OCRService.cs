@@ -25,8 +25,7 @@ namespace Common.Services
         static OCRService()
         {
             // 获取类库项目的 App.config 文件路径
-            string solutionPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName;
-            tessDataPath = Path.Combine(solutionPath, "Common", "Tesseract-OCR", "tessdata");
+            tessDataPath = Path.Combine(ConfigProvider.solutionRoot, "Common", "Tesseract-OCR", "tessdata");
             lock (_engineLock)
             {
                 _engine = new TesseractEngine(tessDataPath, "chi_sim", EngineMode.Default);

@@ -174,7 +174,22 @@ namespace FloatingWindowApp
 
         private void Feedback_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("如果您遇到任何问题，请联系我们进行故障反馈。");
+            string configAppName = "ConfigWindowApp";
+            string configAppPath = Path.Combine(ConfigProvider.solutionRoot, "ConfigWindowApp", "bin", "Debug", "net8.0-windows", "ConfigWindowApp.exe");
+            if (!System.IO.File.Exists(configAppPath))
+            {
+                MessageBox.Show("未找到配置程序！");
+                return;
+            }
+            if (Process.GetProcessesByName(configAppName).Length <= 0)
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = appPath,
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
+            }
         }
 
         private void Exit_Click(object sender, EventArgs e)

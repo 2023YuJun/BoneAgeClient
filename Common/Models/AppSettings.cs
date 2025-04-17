@@ -10,10 +10,14 @@ namespace Common.Models
     {
         public string AppName { get; set; } = "";
         public string AppPath { get; set; } = "";
+        public string DefaultBrowserPath { get; set; } = "";
+        public string OurBrowserUrl { get; } = "https://dl.google.com/chrome/install/latest/chrome_installer.exe";
+        public string OurBrowserPath { get; set; } = "";
         public bool StartStatus { get; set; }
         public bool DetectStatus { get; set; }
         public bool ResultStatus { get; set; }
         public bool BrowserStatus { get; set; }
+        public string CurrentBrowser { get; set; } = "";
         public string ServiceIP { get; set; } = "";
         public string IFZ { get; set; } = "";
         public int MinArea { get; set; } = 800000;

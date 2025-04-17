@@ -11,14 +11,14 @@ namespace Common.Config
     public static class ConfigProvider
     {
         // 动态获取解决方案根目录
-        private static readonly string _solutionRoot = Path.GetFullPath(Path.Combine(
+        public static readonly string solutionRoot = Path.GetFullPath(Path.Combine(
             System.AppDomain.CurrentDomain.BaseDirectory,
             "..", "..", "..", ".."  
         ));
 
         // 配置文件路径
         private static readonly string _configPath = Path.Combine(
-            _solutionRoot, "Common", "Config", "Settings.json"
+            solutionRoot, "Common", "Config", "Settings.json"
         );
 
         // 全局单例配置助手

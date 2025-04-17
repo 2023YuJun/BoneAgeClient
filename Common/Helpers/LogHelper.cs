@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Config;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,9 @@ namespace Common.Helpers
 {
     public class LogHelper
     {
-        private static readonly string _solutionRoot = Path.GetFullPath(Path.Combine(
-            System.AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", ".."
-        ));
-        private static readonly string _logConfigPath = Path.Combine(_solutionRoot, "Common", "Config", "LogConfig.json");
+        private static readonly string _logConfigPath = Path.Combine(ConfigProvider.solutionRoot, "Common", "Config", "LogConfig.json");
         
-        private static readonly string _logBaseDir = Path.Combine(_solutionRoot, "logs");
+        private static readonly string _logBaseDir = Path.Combine(ConfigProvider.solutionRoot, "logs");
         private static readonly string _projectName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Unknown";
         private static LogLevel _minLogLevel = LogLevel.Debug;
         private static long _maxLogSize = 10 * 1024 * 1024; // 10MB
