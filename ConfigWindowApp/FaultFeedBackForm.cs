@@ -176,8 +176,7 @@ namespace ConfigWindowApp
                     deviceIP = deviceIP  
                 };
                 var response = await _client.PostAsync("/winform/faultinfo", faultInfo);
-                MessageBox.Show($"故障信息已反馈。响应状态：{response}");
-
+                MessageBox.Show($"故障信息已反馈。响应状态：{response.StatusCode}");
             }
         }
     }
