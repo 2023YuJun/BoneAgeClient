@@ -1,4 +1,5 @@
 ﻿using Common.Config;
+using Common.Helpers;
 using Common.Services;
 using Microsoft.Win32;
 using System;
@@ -8,19 +9,26 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ConfigWindowApp
 {
     public partial class FaultFeedBackForm : Form
     {
+        private readonly HttpClientService _client;
+        private string BackendUrl = ConfigProvider.Settings.GetConfig().ServiceIP;
+
         public FaultFeedBackForm()
         {
             InitializeComponent();
+            _client = new HttpClientService();
         }
 
         private void UserBrowserBtn_Click(object sender, EventArgs e)
@@ -107,7 +115,7 @@ namespace ConfigWindowApp
         private void ReinstallBrowserBtn_Click(object sender, EventArgs e)
         {
             // 获取项目目录中的安装程序路径
-            string installerPath = Path.Combine(ConfigProvider.solutionRoot, Application.ProductName, "Google Chrome", "ChromeSetup.exe");
+            string installerPath = Path.Combine(ConfigProvider.solutionRoot, System.Windows.Forms.Application.ProductName, "Google Chrome", "ChromeSetup.exe");
             if (!File.Exists(installerPath))
             {
                 MessageBox.Show("安装程序未找到，请确保文件存在于项目目录中。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -150,9 +158,27 @@ namespace ConfigWindowApp
                 "但由于编写时间有限，暂时不实现该功能。");
         }
 
-        private void SeedFaultBtn_Click(object sender, EventArgs e)
+        private async void SeedFaultBtn_Click(object sender, EventArgs e)
         {
+            string faultMessage = ConfigProvider.Settings.GetConfig().FaultFeedBack;
+            string deviceIP = Utils.GetNonLocalhostIPsAsString();
+            if (string.IsNullOrEmpty(faultMessage))
+            {
+                MessageBox.Show("当前没有故障信息可供反馈。");
+                return;
+            }
+            else
+            {
+                LogHelper.Log(LogHelper.LogLevel.Error, faultMessage);
+                var faultInfo = new
+                {
+                    content = faultMessage,  
+                    deviceIP = deviceIP  
+                };
+                var response = await _client.PostAsync("/winform/faultinfo", faultInfo);
+                MessageBox.Show($"故障信息已反馈。响应状态：{response}");
 
+            }
         }
     }
 }

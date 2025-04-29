@@ -9,17 +9,18 @@
   "ResultStatus": false,
   "BrowserStatus": false,
   "CurrentBrowser": "",
-  "ServiceIP": null,
+  "ServiceIP": "http://127.0.0.1:8864",
   "IFZ": "800000,900000,4,1",
   "MinArea": 800000,
   "MaxArea": 900000,
   "MaxAspectRatio": 4,
   "ColumnToTable": 1,
   "RE": "\\d+",
-  "DetectData": "列索引超出范围",
-  "FormLocationX": 897,
-  "FormLocationY": 146,
+  "DetectData": "鼠标位置超出表格范围",
+  "FormLocationX": 800,
+  "FormLocationY": 50,
   "BootUp": false,
   "AutoOpen": false,
-  "ResultResident": false
+  "ResultResident": false,
+  "FaultFeedBack": "个别无结果 启动报错了 "
 }

@@ -5,6 +5,9 @@ using CommonWinForm;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ConfigWindowApp
 {
@@ -14,7 +17,6 @@ namespace ConfigWindowApp
         {
             InitializeComponent();
         }
-
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -175,13 +177,57 @@ namespace ConfigWindowApp
                 if (inputDialog.ShowDialog() == DialogResult.OK)
                 {
                     string inputText = inputDialog.InputText;
-                    try
+
+                    // 正则表达式验证是否为正确的 http://ip:port 格式
+                    string pattern = @"^http://(?:\d{1,3}\.){3}\d{1,3}:\d+$";
+                    if (Regex.IsMatch(inputText, pattern))
                     {
-                        ConfigProvider.Settings.UpdateConfig(s => { s.ServiceIP = inputText; });
+                        try
+                        {
+                            // 解析IP和端口进行进一步验证
+                            Uri uriResult;
+                            bool isValidUrl = Uri.TryCreate(inputText, UriKind.Absolute, out uriResult)
+                                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+                            if (isValidUrl)
+                            {
+                                // 确保IP地址有效
+                                IPAddress ip;
+                                bool isValidIp = IPAddress.TryParse(uriResult.Host, out ip);
+
+                                if (isValidIp)
+                                {
+                                    // 确保端口号在有效范围内
+                                    int port = uriResult.Port;
+                                    if (port >= 1 && port <= 65535)
+                                    {
+                                        // 更新配置
+                                        ConfigProvider.Settings.UpdateConfig(s => { s.ServiceIP = inputText; });
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("端口号不在有效范围内（1-65535）");
+                                    }
+                                }
+                                else
+                                {
+                                    MessageBox.Show("无效的IP地址格式");
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show("无效的URL格式");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"保存服务器IP时发生错误: {ex.Message}");
+                            throw;
+                        }
                     }
-                    catch (Exception ex) { 
-                        MessageBox.Show($"保存服务器IP时发生错误: {ex.Message}");
-                        throw;
+                    else
+                    {
+                        MessageBox.Show("请输入正确的服务器IP格式（如：http://192.168.1.1:8080）");
                     }
                 }
             }
@@ -205,6 +251,17 @@ namespace ConfigWindowApp
 
         private void SwitchBrowserBtn_Click(object sender, EventArgs e)
         {
+            StringBuilder selectedTexts = new StringBuilder();
+
+            foreach (Control control in this.Controls)
+            {
+                GetCheckedCheckBoxes(control, selectedTexts);
+            }
+
+            ConfigProvider.Settings.UpdateConfig(s =>
+            {
+                s.FaultFeedBack = selectedTexts.ToString();
+            });
             FaultFeedBackForm faultFeedBackForm = new FaultFeedBackForm();
             faultFeedBackForm.ShowDialog();
         }
@@ -213,6 +270,22 @@ namespace ConfigWindowApp
         {
             MessageBox.Show("该按钮功能目的是为了实现配置文件从服务器中下载，\n" +
                 "但由于编写时间有限，暂时不实现该功能。");
+        }
+
+        private void GetCheckedCheckBoxes(Control parent, StringBuilder selectedTexts)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is CheckBox checkBox && checkBox.Checked)
+                {
+                    selectedTexts.Append(checkBox.Text+" ");
+                }
+
+                if (control.HasChildren)
+                {
+                    GetCheckedCheckBoxes(control, selectedTexts);
+                }
+            }
         }
     }
 }

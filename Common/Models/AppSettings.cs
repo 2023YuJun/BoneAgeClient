@@ -31,5 +31,7 @@ namespace Common.Models
         public bool BootUp { get; set; }
         public bool AutoOpen { get; set; }
         public bool ResultResident { get; set; }
+
+        public string FaultFeedBack { get; set; } = "";
     }
 }

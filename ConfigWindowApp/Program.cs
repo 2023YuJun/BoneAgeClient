@@ -1,4 +1,7 @@
+using Common;
 using Common.Helpers;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.Logging;
 
 namespace ConfigWindowApp
 {
@@ -7,6 +10,7 @@ namespace ConfigWindowApp
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
+        public static readonly HttpService HttpService = new(7749);
         [STAThread]
         static void Main()
         {
@@ -21,6 +25,12 @@ namespace ConfigWindowApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             ApplicationConfiguration.Initialize();
+
+            HttpService.ConfigureCors(settings => {
+                settings.AllowedOrigins = "*";
+            });
+            Task.Run(() => HttpService.StartAsync());
+
             Application.Run(new MainForm());
         }
     }
