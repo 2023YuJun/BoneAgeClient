@@ -11,5 +11,9 @@ namespace Common.Models
         int FormLocationX { get; set; }
         int FormLocationY { get; set; }
         bool BootUp { get; set; }
+        bool StartStatus { get; set; }
+        bool DetectStatus { get; set; }
+        bool ResultStatus { get; set; }
+        bool BrowserStatus { get; set; }
     }
 }

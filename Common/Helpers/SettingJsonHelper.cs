@@ -169,6 +169,11 @@ namespace Common.Helpers
         private int _lastFormLocationX;
         private int _lastFormLocationY;
         private bool BootUp;
+        private bool StartStatus;
+        private bool DetectStatus;
+        private bool ResultStatus;
+        private bool BrowserStatus;
+
 
         private void CheckAndTriggerEvents(T newConfig)
         {
@@ -190,6 +195,30 @@ namespace Common.Helpers
             if (BootUp != newConfig.BootUp)
             {
                 BootUp = newConfig.BootUp;
+                isChanged = true;
+            }
+
+            if (StartStatus != newConfig.StartStatus)
+            {
+                StartStatus = newConfig.StartStatus;
+                isChanged = true;
+            }
+
+            if (DetectStatus != newConfig.DetectStatus)
+            {
+                DetectStatus = newConfig.DetectStatus;
+                isChanged = true;
+            }
+
+            if (ResultStatus != newConfig.ResultStatus)
+            {
+                ResultStatus = newConfig.ResultStatus;
+                isChanged = true;
+            }
+
+            if (BrowserStatus != newConfig.BrowserStatus)
+            {
+                BrowserStatus = newConfig.BrowserStatus;
                 isChanged = true;
             }
 
