@@ -23,7 +23,6 @@ namespace ConfigWindowApp
     public partial class FaultFeedBackForm : Form
     {
         private readonly HttpClientService _client;
-        private string BackendUrl = ConfigProvider.Settings.GetConfig().ServiceIP;
 
         public FaultFeedBackForm()
         {
@@ -40,6 +39,7 @@ namespace ConfigWindowApp
                 {
                     s.DefaultBrowserPath = defaultBrowserPath;
                     s.CurrentBrowser = "default";
+                    s.BrowserStatus = true;
                 });
                 MessageBox.Show("默认浏览器路径验证成功！\n已使用默认浏览器" );
             }
@@ -98,6 +98,7 @@ namespace ConfigWindowApp
                     {
                         s.OurBrowserPath = newInstalledPath;
                         s.CurrentBrowser = "Our";
+                        s.BrowserStatus = true;
                     });
 
                     MessageBox.Show($"Google浏览器已成功安装！安装路径已记录。", "安装成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -109,6 +110,7 @@ namespace ConfigWindowApp
         {
             ConfigProvider.Settings.UpdateConfig(s => {
                 s.CurrentBrowser = "Our";
+                s.BrowserStatus = true;
             });
         }
 
@@ -175,7 +177,7 @@ namespace ConfigWindowApp
                     content = faultMessage,  
                     deviceIP = deviceIP  
                 };
-                var response = await _client.PostAsync("/winform/faultinfo", faultInfo);
+                var response = await _client.PostAsync("faultinfo", faultInfo);
                 MessageBox.Show($"故障信息已反馈。响应状态：{response.StatusCode}");
             }
         }

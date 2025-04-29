@@ -1,6 +1,7 @@
 using Common;
 using Common.Config;
 using Common.Helpers;
+using Common.Services;
 using CommonWinForm;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -13,9 +14,30 @@ namespace ConfigWindowApp
 {
     public partial class MainForm : Form
     {
+        private readonly HttpClientService _client;
         public MainForm()
         {
             InitializeComponent();
+            _client = new HttpClientService();
+            ConfigProvider.Settings.ConfigChanged += OnConfigChanged;
+        }
+        private void OnConfigChanged()
+        {
+            // 确保在 UI 线程执行
+            if (InvokeRequired)
+            {
+                Invoke(new Action(OnConfigChanged));
+                return;
+            }
+            LoadConfigAndUpdateUI();
+        }
+        private void LoadConfigAndUpdateUI()
+        {
+            var settings = ConfigProvider.Settings.GetConfig();
+            StatusLabel.Text = settings.StartStatus ? "已启动" : "未启动";
+            DetectionLabel.Text = settings.DetectStatus ? "有" : "无";
+            ResultLabel.Text = settings.ResultStatus ? "有" : "无";
+            BrowserLabel.Text = settings.BrowserStatus ? "存在" : "不存在";
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -233,9 +255,36 @@ namespace ConfigWindowApp
             }
         }
 
-        private void DetectNetworkBtn_Click(object sender, EventArgs e)
+        private async void DetectNetworkBtn_Click(object sender, EventArgs e)
         {
-
+            try
+            {
+                var response = await _client.GetAsync("test");
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"通信成功！响应内容：{responseBody}", "测试结果", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"通信失败，状态码：{response.StatusCode}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                MessageBox.Show($"网络请求异常：{ex.Message}\n请检查后端服务是否运行", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
+            }
+            catch (TaskCanceledException)
+            {
+                MessageBox.Show("请求超时，请检查网络连接或后端地址", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"未知错误：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
+            }
         }
 
         private void ReinstallBtn_Click(object sender, EventArgs e)
