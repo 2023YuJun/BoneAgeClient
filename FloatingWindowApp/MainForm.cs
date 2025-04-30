@@ -32,6 +32,8 @@ namespace FloatingWindowApp
         private static bool isShowingMessageBox = false;
         private bool isTaskRunning = false;
 
+        private ResultForm resultForm;
+
         public MainForm()
         {
             InitializeComponent();
@@ -62,8 +64,14 @@ namespace FloatingWindowApp
         }
         private void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, @"^\d+$"))
+            var settings = ConfigProvider.Settings.GetConfig();
+            string regexPattern = settings.RE;
+            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, regexPattern))
             {
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.DetectStatus = true;
+                });
                 // 更新 TextBox 的内容
                 this.Invoke(new Action(() =>
                 {
@@ -77,10 +85,11 @@ namespace FloatingWindowApp
         }
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            ConfigProvider.Settings.UpdateConfig(s =>
+            var text = textBox.Text.Trim();
+            if (!string.IsNullOrEmpty(text))
             {
-                s.DetectData = textBox.Text;
-            });
+                ConfigProvider.Settings.UpdateConfig(s => s.DetectData = text);
+            }
         }
         private void AutoOpen_Click(object sender, EventArgs e)
         {
@@ -214,7 +223,22 @@ namespace FloatingWindowApp
                 isShowingMessageBox = false; // 确保提示框关闭后重置标记
             }
         }
+        private void UpdateResultFormPosition()
+        {
+            if (resultForm != null && !resultForm.IsDisposed)
+            {
+                int offsetY = this.Height + 5;
 
+                resultForm.Location = new Point(
+                    this.Left,
+                    this.Top + offsetY
+                );
+            }
+        }
+        private void MainForm_LocationChanged(object sender, EventArgs e)
+        {
+            UpdateResultFormPosition();
+        }
         private void MainForm_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -243,6 +267,7 @@ namespace FloatingWindowApp
             {
                 Point p = PointToScreen(new Point(e.X, e.Y));
                 Location = new Point(p.X - startPoint.X, p.Y - startPoint.Y);
+                UpdateResultFormPosition();
             }
         }
 
@@ -254,6 +279,7 @@ namespace FloatingWindowApp
                 {
                     s.AppName = appName;
                     s.AppPath = appPath;
+                    s.StartStatus = true;
                 });
                 var settings = ConfigProvider.Settings.GetConfig();
                 int x = settings.FormLocationX;
@@ -266,6 +292,16 @@ namespace FloatingWindowApp
                 this.AutoOpen.Checked = AutoOpen;
                 this.ResultResident.Checked = ResultResident;
                 BootUp.Checked = bootup;
+                
+                // 创建并定位ResultForm
+                resultForm = new ResultForm();
+                if (ResultResident)
+                {
+                    resultForm.Show();
+                    UpdateResultFormPosition();
+                }
+                // 保持置顶状态同步
+                resultForm.TopMost = this.TopMost;
             }
             catch (Exception ex)
             {
@@ -280,8 +316,13 @@ namespace FloatingWindowApp
         {
             try
             {
+                ConfigProvider.Settings.UpdateConfig(s =>
+                {
+                    s.StartStatus = false;
+                });
                 ConfigProvider.Settings.ConfigChanged -= OnConfigChanged;
                 UnhookWindowsHookEx(_hookID);
+                resultForm?.Close();
             }
             catch (Exception ex)
             {

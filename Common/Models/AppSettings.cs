@@ -26,6 +26,7 @@ namespace Common.Models
         public int ColumnToTable { get; set; }
         public string RE { get; set; } = "\\d+";
         public string? DetectData { get; set; }
+        public string? ResultUrl { get; set; }
         public int FormLocationX { get; set; } = 800;
         public int FormLocationY { get; set; } = 50;
         public bool BootUp { get; set; }

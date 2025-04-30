@@ -68,40 +68,40 @@ namespace FloatingWindowApp
             contextMenuStrip.ImageScalingSize = new Size(25, 25);
             contextMenuStrip.Items.AddRange(new ToolStripItem[] { Appearance, Detection, UsageGuide, Feedback, Exit });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(220, 192);
+            contextMenuStrip.Size = new Size(174, 164);
             // 
             // Appearance
             // 
             Appearance.DropDownItems.AddRange(new ToolStripItem[] { SelectColor, AutoOpen, ResultResident, BootUp });
             Appearance.Image = Properties.Resources.外观设置;
             Appearance.Name = "Appearance";
-            Appearance.Size = new Size(219, 32);
+            Appearance.Size = new Size(173, 32);
             Appearance.Text = "外观设置";
             // 
             // SelectColor
             // 
             SelectColor.DropDownItems.AddRange(new ToolStripItem[] { lightToolStripMenuItem, darkToolStripMenuItem });
             SelectColor.Name = "SelectColor";
-            SelectColor.Size = new Size(224, 32);
+            SelectColor.Size = new Size(178, 32);
             SelectColor.Text = "配色选择";
             // 
             // lightToolStripMenuItem
             // 
             lightToolStripMenuItem.Name = "lightToolStripMenuItem";
-            lightToolStripMenuItem.Size = new Size(224, 32);
+            lightToolStripMenuItem.Size = new Size(145, 32);
             lightToolStripMenuItem.Text = "Light";
             // 
             // darkToolStripMenuItem
             // 
             darkToolStripMenuItem.Name = "darkToolStripMenuItem";
-            darkToolStripMenuItem.Size = new Size(224, 32);
+            darkToolStripMenuItem.Size = new Size(145, 32);
             darkToolStripMenuItem.Text = "Dark";
             // 
             // AutoOpen
             // 
             AutoOpen.CheckOnClick = true;
             AutoOpen.Name = "AutoOpen";
-            AutoOpen.Size = new Size(224, 32);
+            AutoOpen.Size = new Size(178, 32);
             AutoOpen.Text = "自动打开";
             AutoOpen.Click += AutoOpen_Click;
             // 
@@ -109,7 +109,7 @@ namespace FloatingWindowApp
             // 
             ResultResident.CheckOnClick = true;
             ResultResident.Name = "ResultResident";
-            ResultResident.Size = new Size(224, 32);
+            ResultResident.Size = new Size(178, 32);
             ResultResident.Text = "结果常驻";
             ResultResident.Click += ResultResident_Click;
             // 
@@ -117,7 +117,7 @@ namespace FloatingWindowApp
             // 
             BootUp.CheckOnClick = true;
             BootUp.Name = "BootUp";
-            BootUp.Size = new Size(224, 32);
+            BootUp.Size = new Size(178, 32);
             BootUp.Text = "开机启动";
             BootUp.Click += BootUp_Click;
             // 
@@ -125,7 +125,7 @@ namespace FloatingWindowApp
             // 
             Detection.Image = Properties.Resources.识别区域;
             Detection.Name = "Detection";
-            Detection.Size = new Size(219, 32);
+            Detection.Size = new Size(173, 32);
             Detection.Text = "识别区域";
             Detection.Click += Detection_Click;
             // 
@@ -133,7 +133,7 @@ namespace FloatingWindowApp
             // 
             UsageGuide.Image = Properties.Resources.使用指南;
             UsageGuide.Name = "UsageGuide";
-            UsageGuide.Size = new Size(219, 32);
+            UsageGuide.Size = new Size(173, 32);
             UsageGuide.Text = "使用指南";
             UsageGuide.Click += UsageGuide_Click;
             // 
@@ -141,7 +141,7 @@ namespace FloatingWindowApp
             // 
             Feedback.Image = Properties.Resources.爬虫;
             Feedback.Name = "Feedback";
-            Feedback.Size = new Size(219, 32);
+            Feedback.Size = new Size(173, 32);
             Feedback.Text = "故障反馈";
             Feedback.Click += Feedback_Click;
             // 
@@ -149,7 +149,7 @@ namespace FloatingWindowApp
             // 
             Exit.Image = Properties.Resources.退出程序;
             Exit.Name = "Exit";
-            Exit.Size = new Size(219, 32);
+            Exit.Size = new Size(173, 32);
             Exit.Text = "退出程序";
             Exit.Click += Exit_Click;
             // 
@@ -170,6 +170,7 @@ namespace FloatingWindowApp
             TopMost = true;
             FormClosing += MainForm_FormClosing;
             Load += MainForm_Load;
+            LocationChanged += MainForm_LocationChanged;
             MouseDown += MainForm_MouseDown;
             MouseMove += MainForm_MouseMove;
             MouseUp += MainForm_MouseUp;

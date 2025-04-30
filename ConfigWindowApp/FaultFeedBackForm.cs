@@ -97,7 +97,7 @@ namespace ConfigWindowApp
                     ConfigProvider.Settings.UpdateConfig(s =>
                     {
                         s.OurBrowserPath = newInstalledPath;
-                        s.CurrentBrowser = "Our";
+                        s.CurrentBrowser = "our";
                         s.BrowserStatus = true;
                     });
 
@@ -109,7 +109,7 @@ namespace ConfigWindowApp
         private void OurBrowserBtn_Click(object sender, EventArgs e)
         {
             ConfigProvider.Settings.UpdateConfig(s => {
-                s.CurrentBrowser = "Our";
+                s.CurrentBrowser = "our";
                 s.BrowserStatus = true;
             });
         }
@@ -147,7 +147,7 @@ namespace ConfigWindowApp
                 ConfigProvider.Settings.UpdateConfig(s =>
                 {
                     s.OurBrowserPath = newInstalledPath;
-                    s.CurrentBrowser = "Our";
+                    s.CurrentBrowser = "our";
                 });
 
                 MessageBox.Show($"Google浏览器已成功安装！安装路径已记录。", "安装成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
