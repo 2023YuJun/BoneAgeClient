@@ -44,8 +44,6 @@
             label6 = new Label();
             panel5 = new Panel();
             tableLayoutPanel2 = new TableLayoutPanel();
-            SwitchConfigBtn = new Button();
-            SwitchBrowserBtn = new Button();
             SwitchVersionBtn = new Button();
             ReinstallBtn = new Button();
             DetectionBtn = new Button();
@@ -56,6 +54,8 @@
             RegularMatchBtn = new Button();
             BootUpBtn = new Button();
             RestartBtn = new Button();
+            SwitchConfigBtn = new Button();
+            SwitchBrowserBtn = new Button();
             label9 = new Label();
             panel6 = new Panel();
             tableLayoutPanel3 = new TableLayoutPanel();
@@ -99,7 +99,7 @@
             tableLayoutPanel1.Padding = new Padding(2);
             tableLayoutPanel1.RowCount = 1;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.Size = new Size(865, 55);
+            tableLayoutPanel1.Size = new Size(866, 55);
             tableLayoutPanel1.TabIndex = 0;
             // 
             // panel4
@@ -112,7 +112,7 @@
             panel4.Margin = new Padding(0);
             panel4.Name = "panel4";
             panel4.Padding = new Padding(5);
-            panel4.Size = new Size(216, 51);
+            panel4.Size = new Size(217, 51);
             panel4.TabIndex = 4;
             // 
             // BrowserLabel
@@ -120,7 +120,7 @@
             BrowserLabel.Dock = DockStyle.Fill;
             BrowserLabel.Location = new Point(105, 5);
             BrowserLabel.Name = "BrowserLabel";
-            BrowserLabel.Size = new Size(106, 41);
+            BrowserLabel.Size = new Size(107, 41);
             BrowserLabel.TabIndex = 1;
             BrowserLabel.Text = "不存在";
             BrowserLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -247,11 +247,12 @@
             panel5.Location = new Point(20, 100);
             panel5.Margin = new Padding(0);
             panel5.Name = "panel5";
-            panel5.Size = new Size(865, 227);
+            panel5.Size = new Size(866, 227);
             panel5.TabIndex = 1;
             // 
             // tableLayoutPanel2
             // 
+            tableLayoutPanel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tableLayoutPanel2.ColumnCount = 4;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
@@ -278,38 +279,6 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 33.34F));
             tableLayoutPanel2.Size = new Size(670, 150);
             tableLayoutPanel2.TabIndex = 2;
-            // 
-            // SwitchConfigBtn
-            // 
-            SwitchConfigBtn.Anchor = AnchorStyles.None;
-            SwitchConfigBtn.BackColor = Color.Black;
-            SwitchConfigBtn.FlatStyle = FlatStyle.System;
-            SwitchConfigBtn.Font = new Font("Microsoft YaHei UI", 10F);
-            SwitchConfigBtn.Location = new Point(357, 106);
-            SwitchConfigBtn.Margin = new Padding(0);
-            SwitchConfigBtn.Name = "SwitchConfigBtn";
-            SwitchConfigBtn.Size = new Size(120, 35);
-            SwitchConfigBtn.TabIndex = 11;
-            SwitchConfigBtn.TabStop = false;
-            SwitchConfigBtn.Text = "更换配置";
-            SwitchConfigBtn.UseVisualStyleBackColor = false;
-            SwitchConfigBtn.Click += SwitchConfigBtn_Click;
-            // 
-            // SwitchBrowserBtn
-            // 
-            SwitchBrowserBtn.Anchor = AnchorStyles.None;
-            SwitchBrowserBtn.BackColor = Color.Black;
-            SwitchBrowserBtn.FlatStyle = FlatStyle.System;
-            SwitchBrowserBtn.Font = new Font("Microsoft YaHei UI", 10F);
-            SwitchBrowserBtn.Location = new Point(525, 106);
-            SwitchBrowserBtn.Margin = new Padding(0);
-            SwitchBrowserBtn.Name = "SwitchBrowserBtn";
-            SwitchBrowserBtn.Size = new Size(120, 35);
-            SwitchBrowserBtn.TabIndex = 10;
-            SwitchBrowserBtn.TabStop = false;
-            SwitchBrowserBtn.Text = "故障反馈";
-            SwitchBrowserBtn.UseVisualStyleBackColor = false;
-            SwitchBrowserBtn.Click += SwitchBrowserBtn_Click;
             // 
             // SwitchVersionBtn
             // 
@@ -471,6 +440,38 @@
             RestartBtn.UseVisualStyleBackColor = false;
             RestartBtn.Click += RestartBtn_Click;
             // 
+            // SwitchConfigBtn
+            // 
+            SwitchConfigBtn.Anchor = AnchorStyles.None;
+            SwitchConfigBtn.BackColor = Color.Black;
+            SwitchConfigBtn.FlatStyle = FlatStyle.System;
+            SwitchConfigBtn.Font = new Font("Microsoft YaHei UI", 10F);
+            SwitchConfigBtn.Location = new Point(357, 106);
+            SwitchConfigBtn.Margin = new Padding(0);
+            SwitchConfigBtn.Name = "SwitchConfigBtn";
+            SwitchConfigBtn.Size = new Size(120, 35);
+            SwitchConfigBtn.TabIndex = 11;
+            SwitchConfigBtn.TabStop = false;
+            SwitchConfigBtn.Text = "更换配置";
+            SwitchConfigBtn.UseVisualStyleBackColor = false;
+            SwitchConfigBtn.Click += SwitchConfigBtn_Click;
+            // 
+            // SwitchBrowserBtn
+            // 
+            SwitchBrowserBtn.Anchor = AnchorStyles.None;
+            SwitchBrowserBtn.BackColor = Color.Black;
+            SwitchBrowserBtn.FlatStyle = FlatStyle.System;
+            SwitchBrowserBtn.Font = new Font("Microsoft YaHei UI", 10F);
+            SwitchBrowserBtn.Location = new Point(525, 106);
+            SwitchBrowserBtn.Margin = new Padding(0);
+            SwitchBrowserBtn.Name = "SwitchBrowserBtn";
+            SwitchBrowserBtn.Size = new Size(120, 35);
+            SwitchBrowserBtn.TabIndex = 10;
+            SwitchBrowserBtn.TabStop = false;
+            SwitchBrowserBtn.Text = "故障反馈";
+            SwitchBrowserBtn.UseVisualStyleBackColor = false;
+            SwitchBrowserBtn.Click += SwitchBrowserBtn_Click;
+            // 
             // label9
             // 
             label9.BackColor = Color.WhiteSmoke;
@@ -492,11 +493,12 @@
             panel6.Location = new Point(20, 357);
             panel6.Margin = new Padding(0);
             panel6.Name = "panel6";
-            panel6.Size = new Size(865, 167);
+            panel6.Size = new Size(866, 167);
             panel6.TabIndex = 2;
             // 
             // tableLayoutPanel3
             // 
+            tableLayoutPanel3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tableLayoutPanel3.ColumnCount = 4;
             tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
@@ -640,11 +642,12 @@
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            ClientSize = new Size(906, 533);
+            ClientSize = new Size(907, 533);
             Controls.Add(panel6);
             Controls.Add(panel5);
             Controls.Add(tableLayoutPanel1);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MinimumSize = new Size(925, 580);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "修复工具";

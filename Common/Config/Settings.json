@@ -16,12 +16,12 @@
   "MaxAspectRatio": 4,
   "ColumnToTable": 1,
   "RE": "\\d+",
-  "DetectData": "0",
+  "DetectData": "列索引超出范围",
   "ResultUrl": "",
-  "FormLocationX": 875,
-  "FormLocationY": 396,
+  "FormLocationX": 945,
+  "FormLocationY": 257,
   "BootUp": false,
   "AutoOpen": false,
-  "ResultResident": false,
-  "FaultFeedBack": "个别无结果 启动报错了 "
+  "ResultResident": true,
+  "FaultFeedBack": ""
 }

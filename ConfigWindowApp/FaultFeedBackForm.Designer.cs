@@ -45,6 +45,7 @@
             // 
             // tableLayoutPanel2
             // 
+            tableLayoutPanel2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tableLayoutPanel2.ColumnCount = 3;
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
@@ -181,6 +182,7 @@
             // 
             // pictureBox1
             // 
+            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             pictureBox1.Image = Properties.Resources.加微信;
             pictureBox1.Location = new Point(680, 20);
             pictureBox1.Name = "pictureBox1";
@@ -195,6 +197,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(932, 353);
             Controls.Add(panel1);
+            MaximumSize = new Size(950, 400);
+            MinimumSize = new Size(950, 400);
             Name = "FaultFeedBackForm";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;

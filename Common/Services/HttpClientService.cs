@@ -24,7 +24,7 @@ namespace Common.Services
         }
 
         // POST 请求
-        public async Task<HttpResponseMessage> PostAsync<T>(string endpoint, T data)
+        public async Task<HttpResponseMessage> PostAsync(string endpoint, object data)
         {
             try
             {
@@ -53,9 +53,29 @@ namespace Common.Services
                 throw;
             }
         }
+        // GET请求（带查询参数）
+        public async Task<HttpResponseMessage> GetAsync(string endpoint, Dictionary<string, string> queryParams = null)
+        {
+            try
+            {
+                // 构建带查询参数的URL
+                var url = $"{_baseUrl}{endpoint}";
+                if (queryParams != null && queryParams.Count > 0)
+                {
+                    var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+                    url += $"?{queryString}";
+                }
+                return await _client.GetAsync(url);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GET请求出错：{ex.Message}");
+                throw;
+            }
+        }
 
         // PUT 请求
-        public async Task<HttpResponseMessage> PutAsync<T>(string endpoint, T data)
+        public async Task<HttpResponseMessage> PutAsync(string endpoint, object data)
         {
             try
             {

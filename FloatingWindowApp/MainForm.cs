@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace FloatingWindowApp
@@ -32,7 +33,9 @@ namespace FloatingWindowApp
         private static bool isShowingMessageBox = false;
         private bool isTaskRunning = false;
 
+        private readonly HttpClientService _client;
         private ResultForm resultForm;
+        private bool isResponse = false;
 
         public MainForm()
         {
@@ -40,6 +43,7 @@ namespace FloatingWindowApp
             InitializeHook();
             SubscribeToOcrEvents();
             ConfigProvider.Settings.ConfigChanged += OnConfigChanged;
+            _client = new HttpClientService();
         }
         private void SubscribeToOcrEvents()
         {
@@ -62,12 +66,13 @@ namespace FloatingWindowApp
             Location = new Point(settings.FormLocationX, settings.FormLocationY);
             BootUp.Checked = settings.BootUp;
         }
-        private void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
+        private async void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
             var settings = ConfigProvider.Settings.GetConfig();
             string regexPattern = settings.RE;
-            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, regexPattern))
+            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, regexPattern) && isResponse)
             {
+                isResponse = false;
                 ConfigProvider.Settings.UpdateConfig(s =>
                 {
                     s.DetectStatus = true;
@@ -77,18 +82,47 @@ namespace FloatingWindowApp
                 {
                     textBox.Text = e.Result;
                 }));
+                if (AutoOpen.Checked)
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        { "patientID", e.Result }
+                    };
+                    var response = await _client.GetAsync("search", queryParams);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        isResponse = true;
+                        var jsonResponse = await response.Content.ReadAsStringAsync();
+                        var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+                    }
+                }
             }
             else if (!string.IsNullOrEmpty(e.Error))
             {
                 ShowError(e.Error);
             }
         }
-        private void textBox_KeyPress(object sender, KeyPressEventArgs e)
+        private async void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+            if (!isResponse)
+            {
+                MessageBox.Show("´¦ÀíÖÐ£¬ÇëÉÔºò¡­¡­");
+                return;
+            }
+            isResponse = false;
             var text = textBox.Text.Trim();
             if (!string.IsNullOrEmpty(text))
             {
                 ConfigProvider.Settings.UpdateConfig(s => s.DetectData = text);
+                var queryParams = new Dictionary<string, string>
+                    {
+                        { "patientID", text }
+                    };
+                var response = await _client.GetAsync("search", queryParams);
+                if (response.IsSuccessStatusCode)
+                {
+                    isResponse = true;
+                }
             }
         }
         private void AutoOpen_Click(object sender, EventArgs e)
@@ -114,6 +148,14 @@ namespace FloatingWindowApp
                 {
                     s.ResultResident = ResultResident.Checked;
                 });
+                if (ResultResident.Checked)
+                {
+                    resultForm.Show();
+                }
+                else
+                {
+                    resultForm.Hide();
+                }
             }
             catch (Exception ex)
             {
