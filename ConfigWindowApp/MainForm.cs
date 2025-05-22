@@ -95,36 +95,11 @@ namespace ConfigWindowApp
                 // 显示覆盖窗体，让用户框选区域
                 if (scf.ShowDialog() == DialogResult.OK && scf.IsConfirmed)
                 {
-                    Bitmap capturedImage = scf.CaptureSelectedRegion();
-                    if (capturedImage != null)
-                    {
-                        // 保存截图到文件
-                        try
-                        {
-                            string currentDirectory = Directory.GetCurrentDirectory();
-                            string projectPath = Directory.GetParent(currentDirectory).Parent.Parent.FullName;
-                            string targetFolder = Path.Combine(projectPath, "DetectionImage");
-
-                            // 如果文件夹不存在，则创建
-                            if (!Directory.Exists(targetFolder))
-                            {
-                                Directory.CreateDirectory(targetFolder);
-                            }
-                            string randomFileName = Utils.GenerateRandomFileName(8);
-                            string filePath = Path.Combine(targetFolder, randomFileName + ".jpeg");
-
-                            capturedImage.Save(filePath, ImageFormat.Jpeg);
-                            MessageBox.Show("截图已保存：" + filePath);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"保存内容时发生错误: {ex.Message}");
-                            throw;
-                        }
-                    }
                 }
             }
+            var setting = ConfigProvider.Settings.GetConfig();
             this.WindowState = FormWindowState.Normal;
+            MessageBox.Show("当前识别：" + setting.DetectData);
         }
 
         private void BootUpBtn_Click(object sender, EventArgs e)

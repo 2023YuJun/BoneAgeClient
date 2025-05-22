@@ -68,21 +68,26 @@ namespace FloatingWindowApp
         }
         private async void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
-            var settings = ConfigProvider.Settings.GetConfig();
-            string regexPattern = settings.RE;
-            if (!string.IsNullOrEmpty(e.Result) && Regex.IsMatch(e.Result, regexPattern) && isResponse)
+            isResponse = false;
+            // 更新 TextBox 的内容
+            this.Invoke(new Action(() =>
             {
-                isResponse = false;
-                ConfigProvider.Settings.UpdateConfig(s =>
-                {
-                    s.DetectStatus = true;
-                });
-                // 更新 TextBox 的内容
-                this.Invoke(new Action(() =>
+                if (!string.IsNullOrEmpty(e.Result))
                 {
                     textBox.Text = e.Result;
-                }));
-                if (AutoOpen.Checked)
+                    resultForm.ResultLabelText = "检测成功，正在请求后端处理";
+                }
+                else if (!string.IsNullOrEmpty(e.Tip))
+                {
+                    resultForm.ResultLabelText = e.Tip;
+                }
+                else if (!string.IsNullOrEmpty(e.Error))
+                {
+                    resultForm.ResultLabelText = "出现错误";
+                    ShowError(e.Error);
+                }
+            }));
+            if (AutoOpen.Checked)
                 {
                     var queryParams = new Dictionary<string, string>
                     {
@@ -94,12 +99,8 @@ namespace FloatingWindowApp
                         isResponse = true;
                         var jsonResponse = await response.Content.ReadAsStringAsync();
                         var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+                        resultForm.ResultLabelText = "预测成功";
                     }
-                }
-            }
-            else if (!string.IsNullOrEmpty(e.Error))
-            {
-                ShowError(e.Error);
             }
         }
         private async void textBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -122,6 +123,7 @@ namespace FloatingWindowApp
                 if (response.IsSuccessStatusCode)
                 {
                     isResponse = true;
+                    resultForm.ResultLabelText = "预测成功";
                 }
             }
         }
@@ -180,40 +182,11 @@ namespace FloatingWindowApp
         }
         private void Detection_Click(object sender, EventArgs e)
         {
-            using (ScreenCaptureForm scf = new ScreenCaptureForm())
+            using (var scf = new ScreenCaptureForm())
             {
-                // 显示覆盖窗体，让用户框选区域
                 if (scf.ShowDialog() == DialogResult.OK && scf.IsConfirmed)
                 {
-                    Bitmap capturedImage = scf.CaptureSelectedRegion();
-                    if (capturedImage != null)
-                    {
-                        // 保存截图到文件
-                        try
-                        {
-                            // 获取解决方案文件夹的路径
-                            string currentDirectory = Directory.GetCurrentDirectory();
-                            string projectPath = Directory.GetParent(currentDirectory).Parent.Parent.FullName;
-                            string targetFolder = Path.Combine(projectPath, "DetectionImage");
 
-                            // 如果文件夹不存在，则创建
-                            if (!Directory.Exists(targetFolder))
-                            {
-                                Directory.CreateDirectory(targetFolder);
-                            }
-                            string randomFileName = Utils.GenerateRandomFileName(8);
-                            // 定义文件路径
-                            string filePath = Path.Combine(targetFolder, randomFileName + ".png");
-
-                            capturedImage.Save(filePath, ImageFormat.Png);
-                            MessageBox.Show("截图已保存：" + filePath);
-                        }
-                        catch (Exception ex)
-                        {
-                            ShowError($"保存内容时发生错误: {ex.Message}");
-                            throw;
-                        }
-                    }
                 }
             }
         }
@@ -394,7 +367,10 @@ namespace FloatingWindowApp
         private void InitializeHook()
         {
             _proc = HookCallback;
-            _hookID = SetHook(_proc);
+            if (_hookID == IntPtr.Zero)
+            {
+                _hookID = SetHook(_proc);
+            }
         }
 
         private static IntPtr SetHook(LowLevelMouseProc proc)

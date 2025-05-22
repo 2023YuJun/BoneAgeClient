@@ -32,6 +32,35 @@ namespace Common.Services
                 _engine.SetVariable("tessedit_char_whitelist", "0123456789 ");
             }
         }
+        public static void PerformDirectOcr(Mat image)
+        {
+            try
+            {
+                string rawText = PerformOcr(image);
+                var settings = ConfigProvider.Settings.GetConfig();
+
+                Match match = Regex.Match(rawText, settings.RE);
+                string result = String.Empty;
+                if (match.Success)
+                {
+                    result = match.Value.ToString();
+                    ConfigProvider.Settings.UpdateConfig(s =>{ s.DetectData = result; s.DetectStatus = true; });
+                    OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Result = result });
+                }
+                else
+                {
+                    result = "未匹配到内容";
+                    ConfigProvider.Settings.UpdateConfig(s => { s.DetectData = result; s.DetectStatus = false; });
+                    OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Tip = result });
+                }
+            }
+            catch (Exception ex)
+            {
+                ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = false; });
+                OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Error = $"处理过程中发生错误: {ex.Message}" });
+                throw;
+            }
+        }
 
         public static async void OCRServiceProcessing(Mat image, Point mousePosition, int screenHeight, Rectangle tableRegion)
         {
@@ -49,20 +78,36 @@ namespace Common.Services
                     );
 
                     string rowData = ExtractCenterRowData(tableData, relativeMousePosition, screenHeight);
+                    var settings = ConfigProvider.Settings.GetConfig(); 
+                    Match match = Regex.Match(rowData, settings.RE);
                     ConfigProvider.Settings.UpdateConfig(s => { s.DetectData = rowData; });
+                    if (string.IsNullOrEmpty(rowData))
+                    {
+                        ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = false; });
+                    }
                     // 触发事件并传递结果
-                    OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Result = rowData });
+                    if (match.Success) {
+                        ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = true; });
+                        OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Result = rowData });
+                    }
+                    else
+                    {
+                        ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = false; });
+                        OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Tip = rowData });
+                    }
                 }
                 else
                 {
                     // 触发事件并传递错误信息
-                    OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Error = "未识别到表格数据" });
+                    ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = false; });
+                    OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Tip = "未识别到表格数据" });
                 }
 
             }
             catch (Exception ex)
             {
                 // 触发事件并传递错误信息
+                ConfigProvider.Settings.UpdateConfig(s => { s.DetectStatus = false; });
                 OcrCompleted?.Invoke(null, new OcrCompletedEventArgs { Error = $"处理过程中发生错误: {ex.Message}" });
                 throw;
             }
@@ -165,6 +210,7 @@ namespace Common.Services
     public class OcrCompletedEventArgs : EventArgs
     {
         public string Result { get; set; }
+        public string Tip { get; set; }
         public string Error { get; set; }
     }
 }

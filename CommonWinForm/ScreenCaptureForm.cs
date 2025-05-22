@@ -6,8 +6,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Common.Config;
+using Common.Services;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 
 namespace CommonWinForm
 {
@@ -37,11 +42,40 @@ namespace CommonWinForm
 
         private void ConfirmSelection(object sender, EventArgs e)
         {
-            // 点击确定后记录区域并关闭窗体
+            if (selectionRect.Width < 10 || selectionRect.Height < 10) return;
+
             IsConfirmed = true;
             SelectedRegion = selectionRect;
-            DialogResult = DialogResult.OK;
-            Close();
+
+            btnConfirm.Enabled = false;
+            Cursor = Cursors.WaitCursor;
+            Hide();
+            try
+            {
+                using (Bitmap bitmap = CaptureSelectedRegion())
+                using (Mat colorImage = bitmap.ToMat())
+                using (Mat grayImage = new Mat())
+                {
+                    CvInvoke.CvtColor(colorImage, grayImage, ColorConversion.Bgr2Gray);
+                    CvInvoke.AdaptiveThreshold(grayImage, grayImage, 255,
+                        AdaptiveThresholdType.GaussianC,
+                        ThresholdType.BinaryInv, 11, 2);
+
+                    OCRService.PerformDirectOcr(grayImage);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            finally
+            {
+                Invoke(new Action(() =>
+                {
+                    DialogResult = DialogResult.OK;
+                    Close();
+                }));
+            }
         }
 
         private void ScreenCaptureForm_MouseDown(object sender, MouseEventArgs e)
