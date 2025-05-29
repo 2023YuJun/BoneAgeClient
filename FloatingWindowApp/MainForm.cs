@@ -86,21 +86,28 @@ namespace FloatingWindowApp
                     resultForm.ResultLabelText = "出现错误";
                     ShowError(e.Error);
                 }
+
+                // 如果 ResultResident 为 false，则显示 resultForm 并启动计时器
+                if (!ConfigProvider.Settings.GetConfig().ResultResident)
+                {
+                    resultForm.Show();
+                    timer.Start();
+                }
             }));
             if (AutoOpen.Checked)
-                {
-                    var queryParams = new Dictionary<string, string>
+            {
+                var queryParams = new Dictionary<string, string>
                     {
                         { "patientID", e.Result }
                     };
-                    var response = await _client.GetAsync("search", queryParams);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        isResponse = true;
-                        var jsonResponse = await response.Content.ReadAsStringAsync();
-                        var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
-                        resultForm.ResultLabelText = "预测成功";
-                    }
+                var response = await _client.GetAsync("search", queryParams);
+                if (response.IsSuccessStatusCode)
+                {
+                    isResponse = true;
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+                    resultForm.ResultLabelText = "预测成功";
+                }
             }
         }
         private async void textBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -124,6 +131,12 @@ namespace FloatingWindowApp
                 {
                     isResponse = true;
                     resultForm.ResultLabelText = "预测成功";
+                }
+
+                if (!ConfigProvider.Settings.GetConfig().ResultResident)
+                {
+                    resultForm.Show();
+                    timer.Start();
                 }
             }
         }
@@ -153,6 +166,7 @@ namespace FloatingWindowApp
                 if (ResultResident.Checked)
                 {
                     resultForm.Show();
+                    timer.Stop();
                 }
                 else
                 {
@@ -307,7 +321,7 @@ namespace FloatingWindowApp
                 this.AutoOpen.Checked = AutoOpen;
                 this.ResultResident.Checked = ResultResident;
                 BootUp.Checked = bootup;
-                
+
                 // 创建并定位ResultForm
                 resultForm = new ResultForm();
                 if (ResultResident)
@@ -431,7 +445,7 @@ namespace FloatingWindowApp
                 {
                     await Task.Run(() => OCRService.OCRServiceProcessing(
                         screenshot,
-                        mousePosition, 
+                        mousePosition,
                         screenshot.Height,
                         tableRegion
                         )
@@ -487,5 +501,10 @@ namespace FloatingWindowApp
             }
         }
 
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            timer.Stop();
+            resultForm?.Hide();
+        }
     }
 }

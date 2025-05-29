@@ -46,6 +46,7 @@ namespace FloatingWindowApp
             UsageGuide = new ToolStripMenuItem();
             Feedback = new ToolStripMenuItem();
             Exit = new ToolStripMenuItem();
+            timer = new System.Windows.Forms.Timer(components);
             contextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -153,6 +154,11 @@ namespace FloatingWindowApp
             Exit.Text = "退出程序";
             Exit.Click += Exit_Click;
             // 
+            // timer
+            // 
+            timer.Interval = 5000;
+            timer.Tick += timer_Tick;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
@@ -194,5 +200,6 @@ namespace FloatingWindowApp
         private ToolStripMenuItem BootUp;
         private ToolStripMenuItem lightToolStripMenuItem;
         private ToolStripMenuItem darkToolStripMenuItem;
+        private System.Windows.Forms.Timer timer;
     }
 }
