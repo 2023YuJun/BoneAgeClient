@@ -69,13 +69,13 @@ namespace FloatingWindowApp
         private async void OcrService_OcrCompleted(object sender, OcrCompletedEventArgs e)
         {
             isResponse = false;
-            // 更新 TextBox 的内容
+
             this.Invoke(new Action(() =>
             {
                 if (!string.IsNullOrEmpty(e.Result))
                 {
                     textBox.Text = e.Result;
-                    resultForm.ResultLabelText = "检测成功，正在请求后端处理";
+                    resultForm.ResultLabelText = "识别成功";
                 }
                 else if (!string.IsNullOrEmpty(e.Tip))
                 {
@@ -83,44 +83,64 @@ namespace FloatingWindowApp
                 }
                 else if (!string.IsNullOrEmpty(e.Error))
                 {
-                    resultForm.ResultLabelText = "出现错误";
+                    resultForm.ResultLabelText = "发生错误";
                     ShowError(e.Error);
                 }
 
-                // 如果 ResultResident 为 false，则显示 resultForm 并启动计时器
                 if (!ConfigProvider.Settings.GetConfig().ResultResident)
                 {
                     resultForm.Show();
                     timer.Start();
                 }
             }));
-            if (AutoOpen.Checked)
+
+            // 只有当有识别结果时，才执行以下逻辑
+            if (!string.IsNullOrEmpty(e.Result))
             {
-                var queryParams = new Dictionary<string, string>
+                try
+                {
+                    var queryParams = new Dictionary<string, string>
                     {
                         { "patientID", e.Result }
                     };
-                var response = await _client.GetAsync("search", queryParams);
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
-                if (response.IsSuccessStatusCode)
-                {
-                    isResponse = true;
-                    ConfigProvider.Settings.UpdateConfig(s =>
+                    var response = await _client.GetAsync("search", queryParams);
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        s.ResultUrl = result["url"];
-                    });
-                    resultForm.ResultLabelText = "预测成功";
-                    resultForm.resultLabel_Click(sender, e);
+                        isResponse = true;
+                        ConfigProvider.Settings.UpdateConfig(s =>
+                        {
+                            s.ResultUrl = result["url"];
+                        });
+                        resultForm.ResultLabelText = "查询成功";
+                    }
+                    else
+                    {
+                        isResponse = true;
+                        ConfigProvider.Settings.UpdateConfig(s =>
+                        {
+                            s.ResultUrl = "";
+                        });
+                        resultForm.ResultLabelText = result["error"] ?? "查询失败，请稍后再试。";
+                    }
+
+                    if (!ConfigProvider.Settings.GetConfig().ResultResident)
+                    {
+                        resultForm.Show();
+                        timer.Start();
+                    }
+
+                    // 只有在自动打开设置为 true 时才执行点击操作
+                    if (ConfigProvider.Settings.GetConfig().AutoOpen)
+                    {
+                        resultForm.resultLabel_Click(sender, e);
+                    }
                 }
-                else 
+                catch (Exception ex)
                 {
-                    isResponse = true;
-                    ConfigProvider.Settings.UpdateConfig(s =>
-                    {
-                        s.ResultUrl = "";
-                    });
-                    resultForm.ResultLabelText = result["error"] ?? "请求失败，请稍后再试。";
+                    ShowError($"查询过程中发生错误: {ex.Message}");
                 }
             }
         }
@@ -135,7 +155,6 @@ namespace FloatingWindowApp
             var text = textBox.Text.Trim();
             if (!string.IsNullOrEmpty(text))
             {
-                ConfigProvider.Settings.UpdateConfig(s => s.DetectData = text);
                 var queryParams = new Dictionary<string, string>
                     {
                         { "patientID", text }
@@ -143,30 +162,24 @@ namespace FloatingWindowApp
                 var response = await _client.GetAsync("search", queryParams);
                 var jsonResponse = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+
                 if (response.IsSuccessStatusCode)
                 {
                     isResponse = true;
-                    resultForm.ResultLabelText = "预测成功";
-                    if (AutoOpen.Checked)
+                    ConfigProvider.Settings.UpdateConfig(s =>
                     {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            ConfigProvider.Settings.UpdateConfig(s =>
-                            {
-                                s.ResultUrl = result["url"];
-                            });
-                            resultForm.ResultLabelText = "预测成功";
-                            resultForm.resultLabel_Click(sender, e);
-                        }
-                        else
-                        {
-                            ConfigProvider.Settings.UpdateConfig(s =>
-                            {
-                                s.ResultUrl = "";
-                            });
-                            resultForm.ResultLabelText = result["error"] ?? "请求失败，请稍后再试。";
-                        }
-                    }
+                        s.ResultUrl = result["url"];
+                    });
+                    resultForm.ResultLabelText = "查询成功";
+                }
+                else
+                {
+                    isResponse = true;
+                    ConfigProvider.Settings.UpdateConfig(s =>
+                    {
+                        s.ResultUrl = "";
+                    });
+                    resultForm.ResultLabelText = result["error"] ?? "查询失败，请稍后再试。";
                 }
 
                 if (!ConfigProvider.Settings.GetConfig().ResultResident)
@@ -174,6 +187,12 @@ namespace FloatingWindowApp
                     resultForm.Show();
                     timer.Start();
                 }
+
+                if (ConfigProvider.Settings.GetConfig().AutoOpen)
+                {
+                    resultForm.resultLabel_Click(sender, e);
+                }
+
             }
         }
         private void AutoOpen_Click(object sender, EventArgs e)
