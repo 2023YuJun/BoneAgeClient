@@ -101,12 +101,26 @@ namespace FloatingWindowApp
                         { "patientID", e.Result }
                     };
                 var response = await _client.GetAsync("search", queryParams);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
                 if (response.IsSuccessStatusCode)
                 {
                     isResponse = true;
-                    var jsonResponse = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
+                    ConfigProvider.Settings.UpdateConfig(s =>
+                    {
+                        s.ResultUrl = result["url"];
+                    });
                     resultForm.ResultLabelText = "预测成功";
+                    resultForm.resultLabel_Click(sender, e);
+                }
+                else 
+                {
+                    isResponse = true;
+                    ConfigProvider.Settings.UpdateConfig(s =>
+                    {
+                        s.ResultUrl = "";
+                    });
+                    resultForm.ResultLabelText = result["error"] ?? "请求失败，请稍后再试。";
                 }
             }
         }
@@ -127,10 +141,32 @@ namespace FloatingWindowApp
                         { "patientID", text }
                     };
                 var response = await _client.GetAsync("search", queryParams);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonResponse);
                 if (response.IsSuccessStatusCode)
                 {
                     isResponse = true;
                     resultForm.ResultLabelText = "预测成功";
+                    if (AutoOpen.Checked)
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            ConfigProvider.Settings.UpdateConfig(s =>
+                            {
+                                s.ResultUrl = result["url"];
+                            });
+                            resultForm.ResultLabelText = "预测成功";
+                            resultForm.resultLabel_Click(sender, e);
+                        }
+                        else
+                        {
+                            ConfigProvider.Settings.UpdateConfig(s =>
+                            {
+                                s.ResultUrl = "";
+                            });
+                            resultForm.ResultLabelText = result["error"] ?? "请求失败，请稍后再试。";
+                        }
+                    }
                 }
 
                 if (!ConfigProvider.Settings.GetConfig().ResultResident)

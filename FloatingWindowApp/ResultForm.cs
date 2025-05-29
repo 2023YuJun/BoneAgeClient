@@ -41,7 +41,7 @@ namespace FloatingWindowApp
             }
         }
 
-        private void resultLabel_Click(object sender, EventArgs e)
+        public void resultLabel_Click(object sender, EventArgs e)
         {
             try
             {
