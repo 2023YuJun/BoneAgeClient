@@ -36,6 +36,8 @@ namespace FloatingWindowApp
         private readonly HttpClientService _client;
         private ResultForm resultForm;
         private bool isResponse = false;
+        private volatile bool _hookEnabled = true;
+
 
         public MainForm()
         {
@@ -251,12 +253,21 @@ namespace FloatingWindowApp
         }
         private void Detection_Click(object sender, EventArgs e)
         {
-            using (var scf = new ScreenCaptureForm())
+            try
             {
-                if (scf.ShowDialog() == DialogResult.OK && scf.IsConfirmed)
-                {
+                // 禁用全局鼠标钩子
+                _hookEnabled = false;
 
+                using (var scf = new ScreenCaptureForm())
+                {
+                    if (scf.ShowDialog() == DialogResult.OK && scf.IsConfirmed)
+                    {
+                    }
                 }
+            }
+            finally
+            {
+                _hookEnabled = true;
             }
         }
 
@@ -453,6 +464,8 @@ namespace FloatingWindowApp
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            if (!_hookEnabled)
+                return CallNextHookEx(_hookID, nCode, wParam, lParam);
             if (nCode >= 0 && wParam == (IntPtr)WM_LBUTTONDOWN)
             {
                 if (_stopwatch.IsRunning && _stopwatch.ElapsedMilliseconds < ThrottleInterval)
